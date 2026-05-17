@@ -1,0 +1,10 @@
+{
+  "name": "badminton-planner",
+  "version": "1.0.0",
+  "description": "Badmington Club Planner App Next.js + React + Expo",
+  "license": "ISC",
+  "author": "Pavlin Panev",
+  "type": "commonjs",
+  "scripts": {
+  }
+}
