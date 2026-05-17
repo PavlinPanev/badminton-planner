@@ -4,7 +4,17 @@
   "description": "Badmington Club Planner App Next.js + React + Expo",
   "license": "ISC",
   "author": "Pavlin Panev",
+  "private": true,
   "type": "commonjs",
+  "workspaces": [
+    "badminton-web",
+    "badminton-mobile"
+  ],
   "scripts": {
+    "dev": "concurrently \"npm run dev --w badminton-web --if-present\" \"npm run dev --w badminton-mobile --if-present\"",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
