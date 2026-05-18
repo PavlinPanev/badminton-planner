@@ -1,6 +1,10 @@
 import Link from "next/link";
 
-export default function Home() {
+import { getCurrentUser } from "@/auth/session";
+
+export default async function Home() {
+  const user = await getCurrentUser();
+
   return (
     <section className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="max-w-3xl">
@@ -17,20 +21,22 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Link
-          href="/login"
-          className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-700 px-5 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
-        >
-          Login
-        </Link>
-        <Link
-          href="/register"
-          className="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
-        >
-          Register
-        </Link>
-      </div>
+      {!user ? (
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-700 px-5 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+          >
+            Login
+          </Link>
+          <Link
+            href="/register"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+          >
+            Register
+          </Link>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
         {[
