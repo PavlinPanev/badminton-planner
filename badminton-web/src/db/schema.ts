@@ -15,7 +15,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const userRoleEnum = pgEnum("user_role", ["manager", "coach", "parent"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "coach", "parent"]);
 export const skillLevelEnum = pgEnum("skill_level", [
   "beginner",
   "intermediate",
