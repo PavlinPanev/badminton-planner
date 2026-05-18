@@ -1,14 +1,10 @@
-import { Link } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function EventDetailsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Badminton Planner</Text>
-      <Link href={'/login' as never} style={styles.link}>
-        Go to Login
-      </Link>
+      <Text style={styles.title}>Event Details</Text>
     </View>
   );
 }
@@ -19,15 +15,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    gap: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: '600',
-    textAlign: 'center',
-  },
-  link: {
-    fontSize: 18,
-    color: '#0a66c2',
   },
 });
