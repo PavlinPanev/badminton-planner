@@ -64,6 +64,14 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm font-medium text-zinc-700 md:flex">
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="rounded-md px-3 py-2 transition hover:bg-emerald-50 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            >
+              Dashboard
+            </Link>
+          ) : null}
           {publicNavItems.map((item) => (
             <Link
               key={item.href}
@@ -81,6 +89,14 @@ export async function SiteHeader() {
             Menu
           </summary>
           <nav className="absolute right-0 z-10 mt-2 flex w-64 flex-col rounded-md border border-zinc-200 bg-white p-2 text-sm font-medium text-zinc-700 shadow-lg">
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="rounded px-3 py-2 hover:bg-emerald-50 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              >
+                Dashboard
+              </Link>
+            ) : null}
             {publicNavItems.map((item) => (
               <Link
                 key={item.href}

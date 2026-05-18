@@ -25,11 +25,11 @@ function readSafeRedirect(value: FormDataEntryValue | null) {
   const redirectTo = String(value ?? "").trim();
 
   if (!redirectTo.startsWith("/") || redirectTo.startsWith("//")) {
-    return "/";
+    return "/dashboard";
   }
 
   if (redirectTo === "/login" || redirectTo === "/register") {
-    return "/";
+    return "/dashboard";
   }
 
   return redirectTo;
@@ -113,7 +113,7 @@ export async function registerAction(
 
   await setSessionCookie(user);
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function logoutAction() {
