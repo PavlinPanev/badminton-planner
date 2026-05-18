@@ -1,13 +1,38 @@
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { jsonError } from "@/auth/api";
+import { getApiUser, jsonError } from "@/auth/api";
 import { db, eventRegistrations, events, players, users, venues } from "@/db";
 
+type EventRegistrationState = "registered" | "waitlisted" | "canceled" | "not_registered";
+
+function resolveRegistrationState(statuses: string[]): EventRegistrationState {
+  if (statuses.includes("registered")) {
+    return "registered";
+  }
+
+  if (statuses.includes("waitlisted")) {
+    return "waitlisted";
+  }
+
+  if (statuses.includes("canceled")) {
+    return "canceled";
+  }
+
+  return "not_registered";
+}
+
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const hasBearerToken = request.headers.get("authorization")?.toLowerCase().startsWith("bearer ");
+  const auth = hasBearerToken ? await getApiUser(request) : null;
+
+  if (auth?.error) {
+    return auth.error;
+  }
+
   const { id } = await params;
   const eventId = Number(id);
 
@@ -42,6 +67,7 @@ export async function GET(
       id: eventRegistrations.id,
       status: eventRegistrations.status,
       registeredAt: eventRegistrations.registeredAt,
+      userId: eventRegistrations.userId,
       userName: users.name,
       playerName: players.name,
     })
@@ -55,9 +81,15 @@ export async function GET(
       id: event.id,
       title: event.title,
       description: event.description,
+      eventType: "public",
       eventDate: event.eventDate,
       capacity: event.capacity,
       canceled: event.canceled,
+      registrationState: resolveRegistrationState(
+        registrations
+          .filter((registration) => registration.userId === auth?.user?.id)
+          .map((registration) => registration.status),
+      ),
       venue: {
         id: event.venueId,
         name: event.venueName,
