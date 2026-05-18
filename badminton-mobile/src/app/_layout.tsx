@@ -27,7 +27,7 @@ function ProtectedStack() {
   }
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: 'Home' }} />
       <Stack.Screen name="login" options={{ title: 'Login' }} />
       <Stack.Screen name="sessions" options={{ title: 'Sessions' }} />

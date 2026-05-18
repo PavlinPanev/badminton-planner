@@ -11,7 +11,9 @@ import {
 } from 'react-native';
 
 import { useAuth } from '@/auth/auth-context';
+import { Badge, MobileCard, PrimaryButton, ProgressBar, ScreenShell } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
+import { colors } from '@/theme/mobile-theme';
 
 type RegistrationState = 'registered' | 'waitlisted' | 'canceled' | 'not_registered';
 
@@ -227,38 +229,39 @@ export default function EventDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color="#0a66c2" size="large" />
-      </View>
+      <ScreenShell>
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.sky} size="large" />
+        </View>
+      </ScreenShell>
     );
   }
 
   if (!event) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error ?? 'Event details are unavailable.'}</Text>
-        <Pressable style={styles.primaryButton} onPress={() => loadEvent()}>
-          <Text style={styles.primaryButtonText}>Retry</Text>
-        </Pressable>
-      </View>
+      <ScreenShell>
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error ?? 'Event details are unavailable.'}</Text>
+          <PrimaryButton label="Retry" onPress={() => loadEvent()} tone="sky" />
+        </View>
+      </ScreenShell>
     );
   }
 
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadEvent('refresh')} />}
-      style={styles.container}
-      contentContainerStyle={styles.content}
-    >
-      <View style={styles.hero}>
+    <ScreenShell padded={false}>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadEvent('refresh')} />}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+      <MobileCard style={styles.hero}>
         <View style={styles.heroHeader}>
           <View style={styles.titleBlock}>
             <Text style={styles.eyebrow}>Event Details</Text>
             <Text style={styles.title}>{event.title}</Text>
           </View>
-          <Text style={[styles.statusBadge, event.canceled && styles.canceledBadge]}>
-            {event.canceled ? 'Canceled' : event.eventType}
-          </Text>
+          <Badge label={event.canceled ? 'Canceled' : event.eventType} tone={event.canceled ? 'rose' : 'sky'} />
         </View>
 
         {event.description ? <Text style={styles.description}>{event.description}</Text> : null}
@@ -276,33 +279,27 @@ export default function EventDetailsScreen() {
           <Text style={styles.sectionLabel}>Venue Address</Text>
           <Text style={styles.address}>{event.venue.address}</Text>
         </View>
-      </View>
+        <ProgressBar value={event.registrationState === 'registered' ? 0.72 : 0.38} tone="violet" />
+      </MobileCard>
 
       {error ? <Text style={styles.inlineError}>{error}</Text> : null}
       {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Registration</Text>
-        <Text
-          style={[
-            styles.registrationBadge,
-            event.registrationState === 'registered' && styles.registrationRegistered,
-            event.registrationState === 'waitlisted' && styles.registrationWaitlisted,
-            event.canceled && styles.registrationCanceled,
-          ]}
-        >
-          {registrationStatusText}
-        </Text>
+        <Badge
+          label={registrationStatusText}
+          tone={event.canceled ? 'rose' : event.registrationState === 'registered' ? 'emerald' : 'violet'}
+        />
 
         <View style={styles.actionRow}>
           {canRegister ? (
-            <Pressable
+            <PrimaryButton
               disabled={isSaving}
               onPress={() => updateRegistration('register')}
-              style={[styles.primaryButton, isSaving && styles.disabledButton]}
-            >
-              <Text style={styles.primaryButtonText}>{isSaving ? 'Saving...' : 'Register'}</Text>
-            </Pressable>
+              label={isSaving ? 'Saving...' : 'Register'}
+              tone="emerald"
+            />
           ) : null}
 
           {canCancel ? (
@@ -321,9 +318,9 @@ export default function EventDetailsScreen() {
             {event.canceled ? 'Registration is closed because this event is canceled.' : 'No registration action is available.'}
           </Text>
         ) : null}
-      </View>
+      </MobileCard>
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Registrations</Text>
         {event.registrations.length ? (
           <View style={styles.registrationList}>
@@ -352,8 +349,9 @@ export default function EventDetailsScreen() {
         ) : (
           <Text style={styles.helperText}>No registrations yet.</Text>
         )}
-      </View>
-    </ScrollView>
+      </MobileCard>
+      </ScrollView>
+    </ScreenShell>
   );
 }
 

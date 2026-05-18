@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 
 import { useAuth } from '@/auth/auth-context';
+import { AttendanceButton, Badge, MobileCard, ProgressBar, ScreenShell } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
+import { colors } from '@/theme/mobile-theme';
 
 type AttendanceStatus = 'attending' | 'absent' | 'maybe' | 'no response';
 type AttendanceUpdateStatus = Exclude<AttendanceStatus, 'no response'>;
@@ -70,6 +72,13 @@ const statusOptions: { label: string; value: AttendanceUpdateStatus }[] = [
   { label: 'Maybe', value: 'maybe' },
 ];
 
+const statusTone = {
+  attending: 'emerald',
+  absent: 'rose',
+  maybe: 'amber',
+  'no response': 'violet',
+} as const;
+
 function formatDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
 
@@ -125,11 +134,7 @@ function SummaryTile({ label, value }: { label: string; value: string | number }
 }
 
 function AttendanceBadge({ status }: { status: AttendanceStatus }) {
-  return (
-    <Text style={[styles.attendanceBadge, styles[`attendance_${status.replace(' ', '_')}`]]}>
-      {statusLabel(status)}
-    </Text>
-  );
+  return <Badge label={statusLabel(status)} tone={statusTone[status]} />;
 }
 
 export default function SessionDetailsScreen() {
@@ -262,38 +267,41 @@ export default function SessionDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color="#0a66c2" size="large" />
-      </View>
+      <ScreenShell>
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.sky} size="large" />
+        </View>
+      </ScreenShell>
     );
   }
 
   if (!session) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error ?? 'Session details are unavailable.'}</Text>
-        <Pressable style={styles.primaryButton} onPress={() => loadSession()}>
-          <Text style={styles.primaryButtonText}>Retry</Text>
-        </Pressable>
-      </View>
+      <ScreenShell>
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error ?? 'Session details are unavailable.'}</Text>
+          <Pressable style={styles.primaryButton} onPress={() => loadSession()}>
+            <Text style={styles.primaryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      </ScreenShell>
     );
   }
 
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadSession('refresh')} />}
-      style={styles.container}
-      contentContainerStyle={styles.content}
-    >
-      <View style={styles.hero}>
+    <ScreenShell padded={false}>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadSession('refresh')} />}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+      <MobileCard style={styles.hero}>
         <View style={styles.heroHeader}>
           <View style={styles.heroTitleBlock}>
             <Text style={styles.eyebrow}>Session Details</Text>
             <Text style={styles.title}>{session.group.title}</Text>
           </View>
-          <Text style={[styles.stateBadge, session.canceled && styles.canceledBadge]}>
-            {session.canceled ? 'Canceled' : session.state}
-          </Text>
+          <Badge label={session.canceled ? 'Canceled' : session.state} tone={session.canceled ? 'rose' : 'emerald'} />
         </View>
 
         <View style={styles.detailGrid}>
@@ -304,12 +312,16 @@ export default function SessionDetailsScreen() {
           <SummaryTile label="Capacity" value={session.capacity ?? 'No limit'} />
           <SummaryTile label="Capacity state" value={session.capacityState} />
         </View>
-      </View>
+        <ProgressBar
+          value={session.capacity ? session.attendanceSummary.attending / session.capacity : 0}
+          tone={session.capacityState === 'full' ? 'rose' : session.capacityState === 'near-full' ? 'amber' : 'sky'}
+        />
+      </MobileCard>
 
       {error ? <Text style={styles.inlineError}>{error}</Text> : null}
       {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Attendance Summary</Text>
         <View style={styles.summaryGrid}>
           <SummaryTile label="Attending" value={session.attendanceSummary.attending} />
@@ -317,10 +329,11 @@ export default function SessionDetailsScreen() {
           <SummaryTile label="Maybe" value={session.attendanceSummary.maybe} />
           <SummaryTile label="No response" value={session.attendanceSummary['no response']} />
         </View>
-      </View>
+      </MobileCard>
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Your Attendance</Text>
+        <Text style={styles.microcopy}>Pick the response that fits today. Notes help coaches plan courts and pairings.</Text>
         {session.active && editableAttendance.length ? (
           editableAttendance.map((record) => {
             const playerId = record.playerId;
@@ -352,25 +365,14 @@ export default function SessionDetailsScreen() {
 
                 <View style={styles.statusButtons}>
                   {statusOptions.map((option) => (
-                    <Pressable
+                    <AttendanceButton
                       key={option.value}
                       disabled={isSaving}
+                      selected={record.status === option.value}
                       onPress={() => updateAttendance(playerId, option.value)}
-                      style={[
-                        styles.statusButton,
-                        record.status === option.value && styles.statusButtonActive,
-                        isSaving && styles.disabledButton,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.statusButtonText,
-                          record.status === option.value && styles.statusButtonTextActive,
-                        ]}
-                      >
-                        {isSaving ? 'Saving...' : option.label}
-                      </Text>
-                    </Pressable>
+                      label={isSaving ? 'Saving...' : option.label}
+                      tone={statusTone[option.value]}
+                    />
                   ))}
                 </View>
               </View>
@@ -383,9 +385,9 @@ export default function SessionDetailsScreen() {
               : 'Attendance is closed for this session.'}
           </Text>
         )}
-      </View>
+      </MobileCard>
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Attendance</Text>
         <View style={styles.memberList}>
           {session.attendance.map((record) => (
@@ -399,9 +401,9 @@ export default function SessionDetailsScreen() {
             </View>
           ))}
         </View>
-      </View>
+      </MobileCard>
 
-      <View style={styles.section}>
+      <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Comments and Coach Notes</Text>
         {session.comments.length ? (
           <View style={styles.commentList}>
@@ -418,8 +420,9 @@ export default function SessionDetailsScreen() {
         ) : (
           <Text style={styles.emptyText}>No coach notes or parent comments have been added.</Text>
         )}
-      </View>
-    </ScrollView>
+      </MobileCard>
+      </ScrollView>
+    </ScreenShell>
   );
 }
 
