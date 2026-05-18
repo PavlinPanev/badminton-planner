@@ -26,11 +26,16 @@ A badminton club planner app: club managers create groups, coaches manage sessio
 ## User Interface Guidelines
 
 - Build a modern, responsive interface with Tailwind.
+- Keep the product colorful, friendly, sporty, and youth-oriented while preserving operational clarity.
+- Use a bright balanced palette inspired by badminton courts and shuttles: emerald/teal, lime, sky blue, violet, and amber.
+- Prefer rounded cards, soft shadows, clear badges, accessible icons, and lively but restrained gradients for major dashboard and session surfaces.
+- Do not use real member, parent, or child photos in demo UI. Use demo-safe generated data, icons, local SVG-style decoration, or abstract sporty gradients.
 - Favor clean operational screens over marketing-style layouts.
 - Keep dashboards dense enough for club management while still easy to scan.
 - Use accessible controls, labels, focus states, loading states, and empty states.
 - Make role-specific actions clear: managers manage groups, coaches manage sessions, parents view sessions and mark attendance.
 - Keep destructive actions explicit and confirmed.
+- Extract repeated dashboard/session UI into small reusable components rather than large monolithic page files.
 
 ## Pages and Navigation Guidelines
 

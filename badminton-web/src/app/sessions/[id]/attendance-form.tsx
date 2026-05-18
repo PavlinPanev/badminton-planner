@@ -14,7 +14,7 @@ function SubmitButton({ label, value }: { label: string; value: string }) {
       name="status"
       value={value}
       disabled={pending}
-      className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-emerald-50 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-black text-zinc-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-lime-100 hover:text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {label}
     </button>
@@ -36,7 +36,7 @@ export function AttendanceForm({
   const [draftNote, setDraftNote] = useState(note);
 
   return (
-    <form action={formAction} className="rounded-md border border-zinc-200 bg-white p-4">
+    <form action={formAction} className="rounded-3xl border border-white/80 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
       <input type="hidden" name="sessionId" value={sessionId} />
       <input type="hidden" name="playerId" value={playerId} />
 
@@ -53,7 +53,7 @@ export function AttendanceForm({
             rows={2}
             maxLength={240}
             placeholder="Optional note"
-            className="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600"
+            className="mt-2 block w-full rounded-2xl border border-zinc-200 bg-lime-50/50 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-600"
           />
         </div>
 

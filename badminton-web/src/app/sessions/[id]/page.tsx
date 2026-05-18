@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { CalendarDays, Clock3, MapPin, MessageCircle, UserRoundCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
+import { AttendanceChips, CapacityMeter } from "@/components/dashboard-session-card";
 import { AttendanceBadge, CanceledBadge, CapacityBadge, StateBadge } from "@/components/session-badges";
+import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
 import { canCancelSession, getAttendanceTargetsForUser, getSessionDetailForUser } from "@/lib/session-data";
 import { formatSessionDate, formatSessionTime, getSessionEnd, sessionDurationMinutes } from "@/lib/session-status";
 import { AttendanceForm } from "./attendance-form";
@@ -39,7 +42,7 @@ export default async function SessionPage({
         <Link href="/dashboard" className="text-sm font-medium text-emerald-700 hover:text-emerald-900">
           Back to dashboard
         </Link>
-        <section className="mt-6 rounded-md border border-red-200 bg-white p-6">
+        <section className="mt-6 rounded-3xl border border-rose-200 bg-white p-6 shadow-lg">
           <h1 className="text-2xl font-semibold text-zinc-950">Session unavailable</h1>
           <p className="mt-3 text-sm leading-6 text-zinc-700">
             You are not a member of the group that owns this session.
@@ -59,20 +62,40 @@ export default async function SessionPage({
   const canUpdateAttendance = session.active && attendanceTargets.length > 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link href="/dashboard" className="text-sm font-medium text-emerald-700 hover:text-emerald-900">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link href="/dashboard" className="text-sm font-black text-emerald-700 hover:text-emerald-900">
         Back to dashboard
       </Link>
 
-      <section className="mt-6 rounded-md border border-zinc-200 bg-white p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <section className="relative mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-sky-500 to-emerald-500 p-6 text-white shadow-[0_24px_70px_rgba(59,130,246,0.25)] sm:p-8">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(135deg,rgba(255,255,255,0.18)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.18)_50%,rgba(255,255,255,0.18)_75%,transparent_75%)] bg-[length:34px_34px] opacity-25" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm font-medium text-zinc-600">
+            <p className="inline-flex rounded-full bg-white/20 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-lime-100 ring-1 ring-white/30">
+              Session details
+            </p>
+            <h1 className="mt-4 text-3xl font-black tracking-normal sm:text-5xl">{session.groupTitle}</h1>
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-white/90">
+              <span className="inline-flex items-center gap-2">
+                <CalendarDays aria-hidden="true" className="h-4 w-4" />
+                {formatSessionDate(session.sessionDate)}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Clock3 aria-hidden="true" className="h-4 w-4" />
+                {formatSessionTime(session.startTime)}-{endTime}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin aria-hidden="true" className="h-4 w-4" />
+                {session.venueName}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <UserRoundCheck aria-hidden="true" className="h-4 w-4" />
+                Coach: {session.coachName ?? "Not assigned"}
+              </span>
+            </div>
+            <p className="sr-only">
               {formatSessionDate(session.sessionDate)} at {formatSessionTime(session.startTime)}-{endTime}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">{session.groupTitle}</h1>
-            <p className="mt-2 text-base text-zinc-700">{session.venueName}</p>
-            <p className="mt-1 text-sm text-zinc-600">Coach: {session.coachName ?? "Not assigned"}</p>
           </div>
           <div className="flex flex-wrap gap-2 md:justify-end">
             <StateBadge state={session.state} />
@@ -81,37 +104,37 @@ export default async function SessionPage({
           </div>
         </div>
 
-        <dl className="mt-6 grid gap-4 border-t border-zinc-200 pt-6 sm:grid-cols-2 lg:grid-cols-5">
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Attendance</dt>
-            <dd className="mt-1 text-sm text-zinc-800">
+        <dl className="relative mt-8 grid gap-4 rounded-3xl bg-white/15 p-4 ring-1 ring-white/25 backdrop-blur sm:grid-cols-2 lg:grid-cols-5">
+          <div className="rounded-2xl bg-white/15 p-4">
+            <dt className="text-xs font-black uppercase tracking-wide text-lime-100">Attendance</dt>
+            <dd className="mt-1 text-sm font-bold text-white">
               {session.attendanceSummary.attending} attending, {session.attendanceSummary.absent} absent
             </dd>
           </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Maybe</dt>
-            <dd className="mt-1 text-sm text-zinc-800">{session.attendanceSummary.maybe}</dd>
+          <div className="rounded-2xl bg-white/15 p-4">
+            <dt className="text-xs font-black uppercase tracking-wide text-lime-100">Maybe</dt>
+            <dd className="mt-1 text-sm font-bold text-white">{session.attendanceSummary.maybe}</dd>
           </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">No response</dt>
-            <dd className="mt-1 text-sm text-zinc-800">{session.attendanceSummary["no response"]}</dd>
+          <div className="rounded-2xl bg-white/15 p-4">
+            <dt className="text-xs font-black uppercase tracking-wide text-lime-100">No response</dt>
+            <dd className="mt-1 text-sm font-bold text-white">{session.attendanceSummary["no response"]}</dd>
           </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Comments</dt>
-            <dd className="mt-1 text-sm text-zinc-800">{session.commentsCount}</dd>
+          <div className="rounded-2xl bg-white/15 p-4">
+            <dt className="text-xs font-black uppercase tracking-wide text-lime-100">Comments</dt>
+            <dd className="mt-1 text-sm font-bold text-white">{session.commentsCount}</dd>
           </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Capacity</dt>
-            <dd className="mt-1 text-sm text-zinc-800">{session.capacity ?? "No limit"}</dd>
+          <div className="rounded-2xl bg-white/15 p-4">
+            <dt className="text-xs font-black uppercase tracking-wide text-lime-100">Capacity</dt>
+            <dd className="mt-1 text-sm font-bold text-white">{session.capacity ?? "No limit"}</dd>
           </div>
         </dl>
 
-        <p className="mt-5 text-sm text-zinc-600">
+        <p className="relative mt-5 text-sm font-semibold text-white/85">
           Sessions are current for {sessionDurationMinutes} minutes after their start time. Attendance is open
           when a session is upcoming or current and not canceled.
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="relative mt-6 flex flex-wrap gap-3">
           <ShareSessionButton sessionId={session.id} />
 
           {canCancel ? (
@@ -128,8 +151,12 @@ export default async function SessionPage({
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-2xl font-semibold tracking-normal text-zinc-950">Your Attendance</h2>
+      <section className="mt-10">
+        <SectionHeader
+          eyebrow="Your response"
+          title="Your Attendance"
+          description="Parents can update attendance for linked players while the session is active."
+        />
         <div className="mt-5 space-y-4">
           {canUpdateAttendance
             ? attendanceTargets.map((target) => {
@@ -148,30 +175,36 @@ export default async function SessionPage({
             : null}
 
           {!session.active ? (
-            <p className="rounded-md border border-zinc-200 bg-white p-4 text-sm text-zinc-700">
-              Attendance updates are closed because this session is past or canceled.
-            </p>
+            <EmptyState title="Attendance is closed" description="This session is past or canceled." />
           ) : null}
 
           {session.active && attendanceTargets.length === 0 ? (
-            <p className="rounded-md border border-zinc-200 bg-white p-4 text-sm text-zinc-700">
-              No linked player attendance target is available for your account on this session.
-            </p>
+            <EmptyState
+              title="No attendance target"
+              description="No linked player attendance target is available for your account on this session."
+            />
           ) : null}
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-2xl font-semibold tracking-normal text-zinc-950">
-          {session.canViewAllAttendance ? "Members and Attendance" : "Your Attendance Records"}
-        </h2>
-        {!session.canViewAllAttendance ? (
-          <p className="mt-2 text-sm text-zinc-700">
-            Coaches and managers can view all attendance records. You can see records connected to your account.
-          </p>
-        ) : null}
-        <div className="mt-5 overflow-hidden rounded-md border border-zinc-200 bg-white">
-          <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-600 md:grid-cols-[1fr_120px_140px_1fr]">
+      <section className="mt-10">
+        <SectionHeader
+          eyebrow="Responses"
+          title={session.canViewAllAttendance ? "Members and Attendance" : "Your Attendance Records"}
+          description={
+            session.canViewAllAttendance
+              ? "Coaches and managers can scan the full group response list."
+              : "Coaches and managers can view all attendance records. You can see records connected to your account."
+          }
+        />
+        <Card className="mt-5 p-5">
+          <div className="space-y-4">
+            <AttendanceChips session={session} />
+            <CapacityMeter session={session} />
+          </div>
+        </Card>
+        <div className="mt-5 overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+          <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-200 bg-gradient-to-r from-lime-50 to-sky-50 px-5 py-4 text-xs font-black uppercase tracking-wide text-zinc-600 md:grid-cols-[1fr_120px_140px_1fr]">
             <span>Member</span>
             <span className="hidden md:block">Role</span>
             <span>Attendance</span>
@@ -180,7 +213,7 @@ export default async function SessionPage({
           {session.members.map((member) => (
             <div
               key={member.id}
-              className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-100 px-4 py-4 text-sm last:border-b-0 md:grid-cols-[1fr_120px_140px_1fr]"
+              className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-100 px-5 py-4 text-sm last:border-b-0 md:grid-cols-[1fr_120px_140px_1fr]"
             >
               <div>
                 <p className="font-medium text-zinc-950">{member.name}</p>
@@ -195,14 +228,17 @@ export default async function SessionPage({
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-2xl font-semibold tracking-normal text-zinc-950">Comments</h2>
+      <section className="mt-10">
+        <SectionHeader eyebrow="Team notes" title="Comments" description="Coach notes and parent comments for this session." />
         <div className="mt-5 space-y-3">
           {session.comments.length ? (
             session.comments.map((comment) => (
-              <article key={comment.id} className="rounded-md border border-zinc-200 bg-white p-4">
+              <article key={comment.id} className="rounded-3xl border border-white/80 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-zinc-950">{comment.authorName}</p>
+                  <p className="inline-flex items-center gap-2 text-sm font-black text-zinc-950">
+                    <MessageCircle aria-hidden="true" className="h-4 w-4 text-sky-600" />
+                    {comment.authorName}
+                  </p>
                   <p className="text-xs text-zinc-500">
                     {new Intl.DateTimeFormat("en", {
                       dateStyle: "medium",
@@ -214,9 +250,7 @@ export default async function SessionPage({
               </article>
             ))
           ) : (
-            <p className="rounded-md border border-zinc-200 bg-white p-4 text-sm text-zinc-700">
-              No comments for this session yet.
-            </p>
+            <EmptyState title="No comments yet" description="No coach notes or parent comments have been added." />
           )}
         </div>
       </section>

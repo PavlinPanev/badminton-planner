@@ -1,77 +1,48 @@
-import Link from "next/link";
+import { CalendarCheck2, CircleHelp, Sparkles, Trophy } from "lucide-react";
+import { gte } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
-import { CanceledBadge, CapacityBadge, StateBadge } from "@/components/session-badges";
+import { DashboardSessionCard } from "@/components/dashboard-session-card";
+import { StatCard } from "@/components/stat-card";
+import { EmptyState, SectionHeader } from "@/components/ui/surfaces";
+import { db, events } from "@/db";
 import { getDashboardSessions, type SessionCardData } from "@/lib/session-data";
-import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
-
-function AttendanceSummary({ session }: { session: SessionCardData }) {
-  return (
-    <div className="grid grid-cols-2 gap-2 text-xs text-zinc-700 sm:grid-cols-4">
-      <span>Attending {session.attendanceSummary.attending}</span>
-      <span>Absent {session.attendanceSummary.absent}</span>
-      <span>Maybe {session.attendanceSummary.maybe}</span>
-      <span>No response {session.attendanceSummary["no response"]}</span>
-    </div>
-  );
-}
-
-function SessionCard({ session }: { session: SessionCardData }) {
-  return (
-    <Link
-      href={`/sessions/${session.id}`}
-      className="block rounded-md border border-zinc-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
-    >
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="text-sm font-medium text-zinc-600">
-            {formatSessionDate(session.sessionDate)} at {formatSessionTime(session.startTime)}
-          </p>
-          <h3 className="mt-1 text-lg font-semibold text-zinc-950">{session.groupTitle}</h3>
-          <p className="mt-1 text-sm text-zinc-700">{session.venueName}</p>
-        </div>
-        <div className="flex flex-wrap gap-2 md:justify-end">
-          <StateBadge state={session.state} />
-          {session.canceled ? <CanceledBadge /> : null}
-          <CapacityBadge state={session.capacityState} />
-        </div>
-      </div>
-
-      <div className="mt-5 space-y-3">
-        <AttendanceSummary session={session} />
-        <div className="flex flex-wrap gap-3 text-xs font-medium text-zinc-600">
-          <span>{session.memberCount} members</span>
-          <span>{session.commentsCount} comments</span>
-          {session.capacity ? <span>Capacity {session.capacity}</span> : null}
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 function SessionSection({
   title,
   description,
   sessions,
   emptyText,
+  archive = false,
 }: {
   title: string;
   description: string;
   sessions: SessionCardData[];
   emptyText: string;
+  archive?: boolean;
 }) {
   return (
     <section>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-semibold tracking-normal text-zinc-950">{title}</h2>
-        <p className="text-sm leading-6 text-zinc-700">{description}</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <SectionHeader title={title} description={description} eyebrow={archive ? "Archive" : "This week"} />
+        {sessions.length ? (
+          <p className="rounded-full bg-white px-4 py-2 text-sm font-black text-zinc-700 shadow-sm ring-1 ring-zinc-950/5">
+            {sessions.length} sessions
+          </p>
+        ) : null}
       </div>
 
       {sessions.length ? (
-        <div className="mt-5 grid gap-4">{sessions.map((session) => <SessionCard key={session.id} session={session} />)}</div>
+        <div className={archive ? "mt-6 grid gap-4 lg:grid-cols-2" : "mt-6 grid gap-5"}>
+          {sessions.map((session) => (
+            <DashboardSessionCard key={session.id} session={session} compact={archive} />
+          ))}
+        </div>
       ) : (
-        <p className="mt-5 rounded-md border border-zinc-200 bg-white p-5 text-sm text-zinc-700">{emptyText}</p>
+        <div className="mt-6">
+          <EmptyState title="No sessions here yet" description={emptyText} />
+        </div>
       )}
     </section>
   );
@@ -84,18 +55,86 @@ export default async function DashboardPage() {
     redirect("/login?next=/dashboard");
   }
 
-  const { activeSessions, archiveSessions } = await getDashboardSessions(user);
+  const [{ activeSessions, archiveSessions }, eventRows] = await Promise.all([
+    getDashboardSessions(user),
+    db
+      .select({ id: events.id })
+      .from(events)
+      .where(gte(events.eventDate, new Date())),
+  ]);
+  const attendingCount = activeSessions.reduce(
+    (total, session) => total + session.attendanceSummary.attending,
+    0,
+  );
+  const pendingResponses = activeSessions.reduce(
+    (total, session) => total + session.attendanceSummary["no response"],
+    0,
+  );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-normal text-zinc-950">User Dashboard</h1>
-        <p className="mt-3 text-base leading-7 text-zinc-700">
-          Browse training sessions for your groups, including attendance responses and comments.
-        </p>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-600 via-teal-500 to-sky-500 p-6 text-white shadow-[0_24px_70px_rgba(20,184,166,0.28)] sm:p-8 lg:p-10">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(135deg,rgba(255,255,255,0.18)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.18)_50%,rgba(255,255,255,0.18)_75%,transparent_75%)] bg-[length:34px_34px] opacity-30" />
+        <div className="relative grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
+          <div>
+            <p className="inline-flex rounded-full bg-white/20 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-lime-100 ring-1 ring-white/30">
+              Badminton club hub
+            </p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-normal sm:text-5xl">
+              Ready for the next rally, {user.name.split(" ")[0]}?
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-emerald-50">
+              Track group sessions, attendance, comments, and club events from one bright, mobile-friendly dashboard.
+            </p>
+          </div>
+          <div className="rounded-3xl bg-white/16 p-5 ring-1 ring-white/30 backdrop-blur">
+            <div className="grid aspect-square place-items-center rounded-3xl border border-white/25 bg-white/15">
+              <div className="text-center">
+                <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-lime-300 text-emerald-950 shadow-lg">
+                  <Trophy aria-hidden="true" className="h-10 w-10" />
+                </div>
+                <p className="mt-4 text-sm font-black uppercase tracking-[0.16em] text-white/90">
+                  Club energy
+                </p>
+                <p className="mt-1 text-xs font-semibold text-emerald-50">Sessions, players, events</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div className="space-y-12">
+      <section className="-mt-5 grid gap-4 px-2 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Upcoming sessions"
+          value={activeSessions.length}
+          detail="Open or current"
+          icon={CalendarCheck2}
+          tone="emerald"
+        />
+        <StatCard
+          title="Players attending"
+          value={attendingCount}
+          detail="Across active sessions"
+          icon={Sparkles}
+          tone="sky"
+        />
+        <StatCard
+          title="Pending responses"
+          value={pendingResponses}
+          detail="No response yet"
+          icon={CircleHelp}
+          tone="violet"
+        />
+        <StatCard
+          title="Events open"
+          value={eventRows.length}
+          detail="Public club events"
+          icon={Trophy}
+          tone="amber"
+        />
+      </section>
+
+      <div className="mt-12 space-y-14">
         <SessionSection
           title="Active Sessions"
           description="Upcoming and current sessions that are open for attendance updates."
@@ -104,9 +143,10 @@ export default async function DashboardPage() {
         />
         <SessionSection
           title="Archive Sessions"
-          description="Past sessions and canceled sessions for your groups."
+          description="Past sessions and canceled sessions for your groups, kept quieter for quick reference."
           sessions={archiveSessions}
           emptyText="There are no archived sessions for your groups."
+          archive
         />
       </div>
     </div>
