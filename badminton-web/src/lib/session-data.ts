@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import {
   db,
@@ -16,6 +16,7 @@ import {
   AttendanceStatus,
   getCapacityState,
   getSessionState,
+  sessionDurationMinutes,
   SessionState,
 } from "./session-status";
 
@@ -29,6 +30,19 @@ type SessionRow = {
   groupTitle: string;
   venueName: string;
   coachName: string | null;
+};
+
+type DashboardSessionKind = "active" | "archive";
+
+type DashboardSessionPageOptions = {
+  activePage?: number;
+  archivePage?: number;
+  pageSize?: number;
+};
+
+type SessionRowsPage = {
+  rows: SessionRow[];
+  total: number;
 };
 
 export type SessionCardData = SessionRow & {
@@ -92,6 +106,32 @@ async function getAccessibleGroupIds(user: AuthUser) {
   );
 }
 
+function normalizePage(value: number | undefined) {
+  return Math.max(Number(value) || 1, 1);
+}
+
+function normalizePageSize(value: number | undefined) {
+  return Math.min(Math.max(Number(value) || 6, 1), 24);
+}
+
+function sessionEndExpression() {
+  return sql`(${sessions.sessionDate}::timestamp + ${sessions.startTime}) + (${sessionDurationMinutes} || ' minutes')::interval`;
+}
+
+function dashboardSessionWhere(groupIds: number[], kind?: DashboardSessionKind) {
+  const groupFilter = inArray(sessions.groupId, groupIds);
+
+  if (kind === "active") {
+    return and(groupFilter, eq(sessions.canceled, false), sql`${sessionEndExpression()} >= now()`);
+  }
+
+  if (kind === "archive") {
+    return and(groupFilter, or(eq(sessions.canceled, true), sql`${sessionEndExpression()} < now()`));
+  }
+
+  return groupFilter;
+}
+
 async function getSessionRowsForUser(user: AuthUser) {
   const groupIds = await getAccessibleGroupIds(user);
 
@@ -117,6 +157,54 @@ async function getSessionRowsForUser(user: AuthUser) {
     .leftJoin(users, eq(sessions.coachUserId, users.id))
     .where(inArray(sessions.groupId, groupIds))
     .orderBy(asc(sessions.sessionDate), asc(sessions.startTime));
+}
+
+async function getSessionRowsPageForUser(
+  user: AuthUser,
+  kind: DashboardSessionKind,
+  page: number,
+  pageSize: number,
+): Promise<SessionRowsPage> {
+  const groupIds = await getAccessibleGroupIds(user);
+
+  if (!groupIds.length) {
+    return {
+      rows: [],
+      total: 0,
+    };
+  }
+
+  const where = dashboardSessionWhere(groupIds, kind);
+  const offset = (page - 1) * pageSize;
+  const [{ total }] = await db.select({ total: count() }).from(sessions).where(where);
+  const rows = await db
+    .select({
+      id: sessions.id,
+      sessionDate: sessions.sessionDate,
+      startTime: sessions.startTime,
+      capacity: sessions.capacity,
+      canceled: sessions.canceled,
+      groupId: groups.id,
+      groupTitle: groups.title,
+      venueName: venues.name,
+      coachName: users.name,
+    })
+    .from(sessions)
+    .innerJoin(groups, eq(sessions.groupId, groups.id))
+    .innerJoin(venues, eq(sessions.venueId, venues.id))
+    .leftJoin(users, eq(sessions.coachUserId, users.id))
+    .where(where)
+    .orderBy(
+      kind === "active" ? asc(sessions.sessionDate) : desc(sessions.sessionDate),
+      kind === "active" ? asc(sessions.startTime) : desc(sessions.startTime),
+    )
+    .limit(pageSize)
+    .offset(offset);
+
+  return {
+    rows,
+    total,
+  };
 }
 
 async function getSessionMembers(groupId: number): Promise<SessionMemberData[]> {
@@ -190,13 +278,47 @@ async function enrichSession(row: SessionRow): Promise<SessionCardData> {
   };
 }
 
-export async function getDashboardSessions(user: AuthUser) {
+export async function getDashboardSessions(user: AuthUser, options?: DashboardSessionPageOptions) {
+  if (options) {
+    const pageSize = normalizePageSize(options.pageSize);
+    const activePage = normalizePage(options.activePage);
+    const archivePage = normalizePage(options.archivePage);
+    const [activePageResult, archivePageResult] = await Promise.all([
+      getSessionRowsPageForUser(user, "active", activePage, pageSize),
+      getSessionRowsPageForUser(user, "archive", archivePage, pageSize),
+    ]);
+    const [activeSessions, archiveSessions] = await Promise.all([
+      Promise.all(activePageResult.rows.map(enrichSession)),
+      Promise.all(archivePageResult.rows.map(enrichSession)),
+    ]);
+
+    return {
+      activeSessions,
+      archiveSessions,
+      paging: {
+        active: {
+          page: activePage,
+          pageSize,
+          total: activePageResult.total,
+          totalPages: Math.max(Math.ceil(activePageResult.total / pageSize), 1),
+        },
+        archive: {
+          page: archivePage,
+          pageSize,
+          total: archivePageResult.total,
+          totalPages: Math.max(Math.ceil(archivePageResult.total / pageSize), 1),
+        },
+      },
+    };
+  }
+
   const rows = await getSessionRowsForUser(user);
   const enriched = await Promise.all(rows.map(enrichSession));
 
   return {
     activeSessions: enriched.filter((session) => session.active),
     archiveSessions: enriched.filter((session) => !session.active),
+    paging: null,
   };
 }
 
