@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import {
   db,
@@ -28,6 +28,7 @@ type SessionRow = {
   groupId: number;
   groupTitle: string;
   venueName: string;
+  coachName: string | null;
 };
 
 export type SessionCardData = SessionRow & {
@@ -41,6 +42,9 @@ export type SessionCardData = SessionRow & {
 
 export type SessionMemberData = {
   id: string;
+  playerId: number | null;
+  parentUserId: number | null;
+  userId: number | null;
   name: string;
   role: string;
   attendance: AttendanceStatus;
@@ -49,6 +53,14 @@ export type SessionMemberData = {
 
 export type SessionDetailData = SessionCardData & {
   members: SessionMemberData[];
+  comments: {
+    id: number;
+    text: string;
+    commentedAt: Date;
+    authorName: string;
+  }[];
+  canViewAllAttendance: boolean;
+  manageable: boolean;
 };
 
 async function getAccessibleGroupIds(user: AuthUser) {
@@ -97,10 +109,12 @@ async function getSessionRowsForUser(user: AuthUser) {
       groupId: groups.id,
       groupTitle: groups.title,
       venueName: venues.name,
+      coachName: users.name,
     })
     .from(sessions)
     .innerJoin(groups, eq(sessions.groupId, groups.id))
     .innerJoin(venues, eq(sessions.venueId, venues.id))
+    .leftJoin(users, eq(sessions.coachUserId, users.id))
     .where(inArray(sessions.groupId, groupIds))
     .orderBy(asc(sessions.sessionDate), asc(sessions.startTime));
 }
@@ -111,8 +125,10 @@ async function getSessionMembers(groupId: number): Promise<SessionMemberData[]> 
       memberId: groupMembers.id,
       role: groupMembers.role,
       userName: users.name,
+      userId: users.id,
       playerName: players.name,
       playerId: players.id,
+      parentUserId: players.parentUserId,
     })
     .from(groupMembers)
     .leftJoin(users, eq(groupMembers.userId, users.id))
@@ -122,6 +138,9 @@ async function getSessionMembers(groupId: number): Promise<SessionMemberData[]> 
 
   return rows.map((row) => ({
     id: row.playerId ? `player-${row.playerId}` : `member-${row.memberId}`,
+    playerId: row.playerId,
+    parentUserId: row.parentUserId,
+    userId: row.userId,
     name: row.playerName ?? row.userName ?? "Unknown member",
     role: row.role,
     attendance: "no response",
@@ -185,7 +204,7 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
   const groupIds = await getAccessibleGroupIds(user);
 
   if (!groupIds.length) {
-    return null;
+    return { status: "forbidden" as const, session: null };
   }
 
   const [row] = await db
@@ -198,18 +217,25 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
       groupId: groups.id,
       groupTitle: groups.title,
       venueName: venues.name,
+      coachName: users.name,
     })
     .from(sessions)
     .innerJoin(groups, eq(sessions.groupId, groups.id))
     .innerJoin(venues, eq(sessions.venueId, venues.id))
+    .leftJoin(users, eq(sessions.coachUserId, users.id))
     .where(eq(sessions.id, sessionId))
     .limit(1);
 
-  if (!row || !groupIds.includes(row.groupId)) {
-    return null;
+  if (!row) {
+    return { status: "not-found" as const, session: null };
   }
 
-  const [card, members, attendanceRows] = await Promise.all([
+  if (!groupIds.includes(row.groupId)) {
+    return { status: "forbidden" as const, session: null };
+  }
+
+  const canViewAllAttendance = await canManageSession(sessionId, user);
+  const [card, members, attendanceRows, commentRows] = await Promise.all([
     enrichSession(row),
     getSessionMembers(row.groupId),
     db
@@ -220,6 +246,17 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
       })
       .from(sessionAttendance)
       .where(eq(sessionAttendance.sessionId, row.id)),
+    db
+      .select({
+        id: sessionComments.id,
+        text: sessionComments.text,
+        commentedAt: sessionComments.commentedAt,
+        authorName: users.name,
+      })
+      .from(sessionComments)
+      .innerJoin(users, eq(sessionComments.userId, users.id))
+      .where(eq(sessionComments.sessionId, row.id))
+      .orderBy(desc(sessionComments.commentedAt)),
   ]);
 
   const attendanceByPlayerId = new Map(attendanceRows.map((attendance) => [attendance.playerId, attendance]));
@@ -238,13 +275,23 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
     };
   });
 
+  const visibleMembers = canViewAllAttendance
+    ? detailMembers
+    : detailMembers.filter((member) => member.userId === user.id || member.parentUserId === user.id);
+
   return {
-    ...card,
-    members: detailMembers,
+    status: "ok" as const,
+    session: {
+      ...card,
+      members: visibleMembers,
+      comments: commentRows,
+      canViewAllAttendance,
+      manageable: canViewAllAttendance,
+    },
   };
 }
 
-export async function canCancelSession(sessionId: number, user: AuthUser) {
+export async function canManageSession(sessionId: number, user: AuthUser) {
   if (user.role === "admin") {
     return true;
   }
@@ -273,4 +320,51 @@ export async function canCancelSession(sessionId: number, user: AuthUser) {
     .limit(1);
 
   return membership?.role === "coach" || membership?.role === "manager";
+}
+
+export const canCancelSession = canManageSession;
+
+export async function getSessionGroupForUser(sessionId: number, user: AuthUser) {
+  const [session] = await db
+    .select({
+      id: sessions.id,
+      groupId: sessions.groupId,
+      sessionDate: sessions.sessionDate,
+      startTime: sessions.startTime,
+      canceled: sessions.canceled,
+    })
+    .from(sessions)
+    .where(eq(sessions.id, sessionId))
+    .limit(1);
+
+  if (!session) {
+    return null;
+  }
+
+  const groupIds = await getAccessibleGroupIds(user);
+
+  if (!groupIds.includes(session.groupId)) {
+    return null;
+  }
+
+  return session;
+}
+
+export async function getAttendanceTargetsForUser(sessionId: number, user: AuthUser) {
+  const session = await getSessionGroupForUser(sessionId, user);
+
+  if (!session) {
+    return [];
+  }
+
+  const ownedPlayers = await db
+    .select({
+      id: players.id,
+      name: players.name,
+    })
+    .from(players)
+    .innerJoin(groupMembers, eq(groupMembers.playerId, players.id))
+    .where(and(eq(players.parentUserId, user.id), eq(groupMembers.groupId, session.groupId)));
+
+  return ownedPlayers;
 }
