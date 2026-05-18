@@ -1,7 +1,31 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+import { Stack, usePathname, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-export default function RootLayout() {
+import { AuthProvider, useAuth } from '@/auth/auth-context';
+
+const publicRoutes = new Set(['/', '/login']);
+
+function ProtectedStack() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { isLoading, isLoggedIn } = useAuth();
+  const isPublicRoute = publicRoutes.has(pathname);
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn && !isPublicRoute) {
+      router.replace('/login' as never);
+    }
+  }, [isLoading, isLoggedIn, isPublicRoute, router]);
+
+  if (isLoading || (!isLoggedIn && !isPublicRoute)) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0a66c2" />
+      </View>
+    );
+  }
+
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: 'Home' }} />
@@ -13,3 +37,20 @@ export default function RootLayout() {
     </Stack>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <ProtectedStack />
+    </AuthProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+});

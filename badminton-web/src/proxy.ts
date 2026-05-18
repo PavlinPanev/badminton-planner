@@ -4,6 +4,12 @@ import { sessionCookieName, verifySessionToken } from "@/auth/token";
 
 const publicRoutes = new Set(["/", "/venues", "/events", "/login", "/register"]);
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 function isPublicPath(pathname: string) {
   if (publicRoutes.has(pathname)) {
     return true;
@@ -14,6 +20,21 @@ function isPublicPath(pathname: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/api/")) {
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
+    }
+
+    const response = NextResponse.next();
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+    return response;
+  }
 
   if (isPublicPath(pathname)) {
     return NextResponse.next();
@@ -39,5 +60,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
