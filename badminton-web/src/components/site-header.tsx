@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, ShieldCheck, UserPlus, UserRoundCog, UsersRound } from "lucide-react";
 
 import { logoutAction } from "@/auth/actions";
 import { getCurrentUser } from "@/auth/session";
@@ -82,8 +82,12 @@ export async function SiteHeader() {
                 <UsersRound aria-hidden="true" className="h-4 w-4" />
                 Groups
               </NavLink>
+              <NavLink href="/profile">
+                <UserRoundCog aria-hidden="true" className="h-4 w-4" />
+                Profile
+              </NavLink>
               {user.role === "admin" ? (
-                <NavLink href="/admin/users">
+                <NavLink href="/admin">
                   <ShieldCheck aria-hidden="true" className="h-4 w-4" />
                   Admin
                 </NavLink>
@@ -114,8 +118,12 @@ export async function SiteHeader() {
                   <UsersRound aria-hidden="true" className="h-4 w-4" />
                   Groups
                 </NavLink>
+                <NavLink href="/profile" compact>
+                  <UserRoundCog aria-hidden="true" className="h-4 w-4" />
+                  Profile
+                </NavLink>
                 {user.role === "admin" ? (
-                  <NavLink href="/admin/users" compact>
+                  <NavLink href="/admin" compact>
                     <ShieldCheck aria-hidden="true" className="h-4 w-4" />
                     Admin
                   </NavLink>
