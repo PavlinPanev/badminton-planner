@@ -1,8 +1,8 @@
 # Full Stack Apps with AI — Capstone Assessment
 
-Date: 2026-05-19  
-Project: Badminton Club Planner  
-Repository: badminton-planner  
+Date: 2026-05-19
+Project: Badminton Club Planner
+Repository: badminton-planner
 Assessor: Codex
 
 ## Overall Score
@@ -11,490 +11,447 @@ Assessor: Codex
 |---|---:|---:|
 | GitHub Commits | 15 | 15 |
 | GitHub Commit Days | 15 | 15 |
-| Architecture | 4 | 5 |
-| Backend | 4 | 5 |
+| Architecture | 5 | 5 |
+| Backend | 5 | 5 |
 | Database | 5 | 5 |
-| Users and Roles | 4 | 5 |
-| Scalability | 4 | 5 |
+| Users and Roles | 5 | 5 |
+| Scalability | 5 | 5 |
 | Web App | 14 | 15 |
-| Admin Panel | 3 | 5 |
+| Admin Panel | 5 | 5 |
 | Mobile App | 14 | 15 |
 | Deployment | 1 | 5 |
-| Documentation | 5 | 5 |
-| TOTAL | 88 | 100 |
+| Documentation | 4.5 | 5 |
+| TOTAL | 93.5 | 100 |
 
-Estimated current capstone score: **88 / 100**.
+Estimated current capstone score: **93.5 / 100**.
 
-Bonus items reviewed but not added to the base score:
+This assessment inspected repository structure, git history, package/workspace setup, Next.js backend routes, auth code, service/data helpers, Drizzle schema and migrations, seed scripts, web pages, mobile screens, docs, deployment signals, generated assets, and bonus areas. Automated checks run during assessment:
 
-| Bonus Area | Status |
-|---|---|
-| File Storage | Not implemented |
-| Automated Tests | Not implemented |
-| Automated Backups | Not implemented |
-
-Historical assessment note: this report was saved as a new dated assessment. A previous assessment exists at `docs/assessments/assessment-2026-05-18.md`.
+- `npm run test --workspace badminton-web`: passed, 4 test files and 17 tests.
+- `npm run lint --workspace badminton-web`: passed with 3 unused type-import warnings.
+- `npm run lint --workspace badminton-mobile`: passed.
 
 ## GitHub Commits — 15 / 15
 
 ### Evidence Found
-- `git rev-list --count HEAD` reports **43 commits**.
-- The history shows meaningful project progression across setup, database, auth, web workflows, mobile features, performance work, and documentation.
-- The current repository contains committed implementation for the monorepo, Next.js web app, Expo mobile app, Drizzle schema/migrations, REST API routes, and capstone documentation.
+- `git rev-list --count HEAD` reports **54 commits**.
+- Commit messages show meaningful progression from repository initialization, Expo setup, database schema, auth, dashboard, attendance, sessions, mobile screens, admin, pagination, performance seed, docs, tests, and validation.
+- Recent history includes targeted feature commits such as API validation, pagination, permissions, admin user management, performance indexes, and mobile screen improvements.
 
 ### Missing / Weak Areas
-- No weakness for the commit-count criterion.
-- Some local working-tree changes may still be uncommitted, so final submission should use clean, meaningful commits.
+- No functional weakness for this criterion.
 
 ### Why Points Were Deducted
-- No points deducted. The requirement caps at 15 points and the repository exceeds 15 commits.
+- No points deducted. The project exceeds the 15-commit maximum scoring threshold.
 
 ### Recommended Codex Prompt
 
 ```text
-Review the current working tree and prepare a clean final commit sequence for the capstone.
-Group changes by purpose:
-- performance seed and indexes
-- API pagination
-- web UI pagination
-- mobile fixes
-- documentation and assessment
-
-Do not squash unrelated work together.
-Run lint/build/type checks before the final commits and summarize the results.
+Review the git history and identify any noisy or accidental commits that should be cleaned up before final submission.
+Do not rewrite history unless I explicitly confirm.
+Create a short release summary grouped by feature area, using the current commit history as evidence.
 ```
 
 ## GitHub Commit Days — 15 / 15
 
 ### Evidence Found
-- `git log --date=short --pretty=format:%ad` shows commits on **2026-05-17**, **2026-05-18**, and **2026-05-19**.
-- That is 3 distinct commit days.
-- Official scoring is 5 points per day, capped at 15.
+- Git history contains commits on **2026-05-17**, **2026-05-18**, and **2026-05-19**.
+- This satisfies the requirement for commits on at least 3 different days.
+- Work appears spread across initialization, feature development, database/auth work, mobile improvements, docs, and performance/scalability additions.
 
 ### Missing / Weak Areas
-- No weakness for this criterion.
+- No functional weakness for this criterion.
 
 ### Why Points Were Deducted
-- No points deducted. The repository has commits on at least 3 different days.
+- No points deducted. The project meets the 3-day maximum scoring threshold.
 
 ### Recommended Codex Prompt
 
 ```text
-Inspect my git history and suggest whether the final capstone commits tell a clear implementation story.
-Identify any large mixed commits that should be explained in the README or project defense notes.
-Do not rewrite history unless I explicitly ask.
+Create a concise development timeline from the git history:
+- group commits by date
+- summarize what was added each day
+- highlight the progression from setup to full-stack implementation
+- produce a section suitable for the capstone README
 ```
 
-## Architecture — 4 / 5
+## Architecture — 5 / 5
 
 ### Evidence Found
-- Root `package.json` uses npm workspaces for `badminton-web` and `badminton-mobile`.
-- `badminton-web/` is a Next.js app with App Router pages, API routes, auth, database, services/data modules, UI components, and Drizzle migrations.
-- `badminton-mobile/` is an Expo React Native app using Expo Router and REST API communication.
-- `badminton-shared/` exists as a shared package location for TypeScript types and cross-app utilities.
-- Web app communication uses Server Actions for form workflows and REST API routes for mobile clients.
-- Mobile app communicates with the backend through `badminton-mobile/src/lib/api.ts` using `BADMINTON_API_URL` and Bearer tokens.
-- Backend logic is partly separated into service/data modules such as `session-data.ts`, `group-data.ts`, `event-data.ts`, and `venue-data.ts`.
+- Root `package.json` defines npm workspaces for `badminton-web`, `badminton-mobile`, and `badminton-shared`.
+- `badminton-web` is a Next.js app with App Router pages, API routes, auth helpers, Drizzle DB code, server actions, services, and UI components.
+- `badminton-mobile` is an Expo React Native app using Expo Router.
+- `badminton-shared` contains shared API/user types consumed by web and mobile.
+- Mobile communicates with the backend through REST calls in `badminton-mobile/src/lib/api.ts` and screen fetches using `Authorization: Bearer ...`.
+- Service/data layers exist in `badminton-web/src/services` and `badminton-web/src/lib`.
+- Docs include `docs/architecture.md`, with diagrams and explicit client-server flow.
 
 ### Missing / Weak Areas
-- `badminton-shared/src` appears empty or underused, so shared TypeScript models are not fully realized.
-- Some route handlers and Server Actions still contain business logic directly instead of consistently delegating to services.
-- There is no dedicated repository layer; the project uses service/data modules plus direct Drizzle queries.
+- Some backend business logic is split between `src/services` and data helpers under `src/lib`; this is acceptable, but the boundary could be documented more tightly.
+- Web Server Actions still contain some direct database access, especially auth and admin role updates. This does not break the criterion, but a stricter production architecture would push more mutation logic into services.
 
 ### Why Points Were Deducted
-- Deducted 1 point for incomplete shared package usage and partially mixed route/action/service responsibilities.
+- No points deducted. The implementation clearly satisfies monorepo, Next.js, Expo, client-server, REST, service/data separation, and modular organization requirements.
 
 ### Recommended Codex Prompt
 
 ```text
-Refactor the architecture incrementally:
-- move stable API response types into badminton-shared
-- import those types from both badminton-web and badminton-mobile
-- keep route handlers thin by moving event, group, and announcement query logic into service/data modules
-- preserve all existing routes, forms, and API response shapes
-- do not rewrite the app structure
-
-Run TypeScript checks for web, mobile, and shared packages after the refactor.
+Inspect the web backend architecture and tighten service-layer consistency:
+- move reusable mutation business logic out of Server Actions into service modules
+- keep route handlers and actions focused on parsing, auth, redirects, and responses
+- preserve the current folder structure and avoid broad rewrites
+- update docs/architecture.md with the final service boundary
 ```
 
-## Backend — 4 / 5
+## Backend — 5 / 5
 
 ### Evidence Found
-- Next.js backend exists under `badminton-web`.
-- RESTful API endpoints exist for auth, sessions, session attendance, session comments, events, event registration, announcements, and API docs.
-- Database persistence uses Drizzle ORM and PostgreSQL/Neon configuration.
-- JWT generation and verification exist in `badminton-web/src/auth/token.ts`.
-- Bearer-token API authentication exists in `badminton-web/src/auth/api.ts`.
-- Web session handling exists through auth actions, cookies, and protected-page proxy logic.
-- Authorization checks exist in service/action paths for group management, session management, attendance ownership, comments, venue management, and event management.
-- Business logic is meaningfully separated in several files under `badminton-web/src/lib`.
+- Next.js backend is implemented under `badminton-web/src/app/api`.
+- REST API routes include auth, groups, sessions, attendance, comments, events, registrations, announcements, and docs.
+- Database persistence is handled through Drizzle in `badminton-web/src/db`.
+- Authentication exists through JWT helpers in `badminton-web/src/auth/token.ts`, web cookies in `session.ts`, and Bearer token validation in `api.ts`.
+- Password login and registration are implemented in `badminton-web/src/services/auth-service.ts`.
+- Authorization checks exist in route/service/data flows, including group access, session access, attendance ownership, comment editing, event actions, and admin pages.
+- Business logic is meaningfully separated into service modules such as `auth-service.ts`, `groups-service.ts`, `sessions-service.ts`, `events-service.ts`, and `announcements-service.ts`.
 
 ### Missing / Weak Areas
-- Manual validation is used in many places; no consistent schema validation layer such as Zod was found.
-- Some API route handlers still perform direct database queries and business decisions.
-- Token handling is capstone-appropriate but not production-grade refresh-token/session-rotation architecture.
+- No refresh-token rotation or token revocation list is present. This is not required by the official base criterion, but it would improve production readiness.
+- CORS is currently permissive for API routes (`Access-Control-Allow-Origin: *`), which is convenient for evaluation but should be restricted in production.
 
 ### Why Points Were Deducted
-- Deducted 1 point for inconsistent validation/service separation and limited production auth hardening.
+- No points deducted. The required backend capabilities are present and supported by real code.
 
 ### Recommended Codex Prompt
 
 ```text
-Upgrade the backend API architecture without changing behavior:
-- add reusable validation helpers or Zod schemas for auth, pagination, events, comments, and attendance inputs
-- keep route handlers thin: parse input, call service, return stable JSON
-- move remaining direct route-handler business logic into services
-- preserve the existing REST endpoints and response shapes
-- keep all authorization checks server-side
-
-Run web lint and TypeScript checks after the refactor.
+Harden the backend authentication and API security without changing the app architecture:
+- restrict CORS by environment-configured allowed origins
+- add JWT expiration handling documentation and client behavior
+- optionally add refresh-token storage and logout invalidation
+- keep existing REST response shapes stable
+- add focused tests for unauthorized, forbidden, and expired-token API cases
 ```
 
 ## Database — 5 / 5
 
 ### Evidence Found
-- Drizzle configuration exists in `badminton-web/drizzle.config.ts`.
-- PostgreSQL schema exists in `badminton-web/src/db/schema.ts`.
-- Migration SQL is committed under `badminton-web/drizzle/`, including performance indexes in `0005_performance_indexes.sql`.
-- The schema has well over the required 4 tables, including `users`, `players`, `venues`, `groups`, `group_members`, `group_invitations`, `group_announcements`, `sessions`, `session_attendance`, `session_comments`, `events`, and `event_registrations`.
-- Drizzle relations are defined for users, players, groups, memberships, invitations, announcements, sessions, attendance, comments, events, and registrations.
-- Indexes exist for frequent query paths including user email, player parent, group venue, memberships, session group/date/venue/coach, attendance session/player, comments session/time, event date, and registrations.
-- Normal and performance seed scripts exist.
+- PostgreSQL/Neon support is configured through `badminton-web/drizzle.config.ts` and `DATABASE_URL`.
+- Drizzle schema exists at `badminton-web/src/db/schema.ts`.
+- Committed migrations exist under `badminton-web/drizzle`, including performance index migration `0005_performance_indexes.sql`.
+- Schema defines more than the minimum 4 tables: users, players, venues, groups, group members, invitations, announcements, sessions, attendance, comments, events, and event registrations.
+- Relationships are defined with Drizzle `relations(...)`.
+- Indexes and unique indexes exist for common lookup paths such as users by email, sessions by group/date/venue/coach, attendance by session/player, comments by session/time, event registrations, and group membership.
+- Seed scripts exist: `src/db/seed.ts` and `src/db/seed-performance.ts`.
 
 ### Missing / Weak Areas
-- No major weakness for the database criterion.
-- One minor maintenance risk: verify the Drizzle migration metadata stays synchronized after manual migration files.
+- Migration metadata should be kept synchronized carefully if migrations are edited manually.
+- No database restore/backup workflow is committed, but that belongs to the bonus backup criterion rather than the base database criterion.
 
 ### Why Points Were Deducted
-- No points deducted. The database implementation exceeds the table-count requirement and includes relationships, migrations, seeds, and indexes.
+- No points deducted. The table count alone exceeds the internal 2-points-per-table guidance, and the final database score is capped at 5.
 
 ### Recommended Codex Prompt
 
 ```text
 Audit the Drizzle database layer for final submission:
-- verify every schema change has a corresponding migration
-- verify migration metadata is consistent
-- document all tables and relationships in docs/database-schema.md
-- confirm seed and performance seed scripts still run against a local Neon/Postgres database
-- do not drop or rewrite existing tables
+- verify migration metadata matches committed SQL migrations
+- document every table relationship and important index
+- add a short migration/seed verification checklist
+- do not change schema unless an inconsistency is found
 ```
 
-## Users and Roles — 4 / 5
+## Users and Roles — 5 / 5
 
 ### Evidence Found
-- Web register, login, and logout flows exist.
-- Mobile login/logout and token storage exist.
-- Mobile register screen exists.
-- Password hashing uses `bcrypt`.
-- JWT token generation and verification use `jose`.
-- Roles exist: `admin`, `manager`, `coach`, and `parent`.
-- Group membership roles exist: `manager`, `coach`, `parent`, and `player`.
-- Seed data includes admin, manager, coach, and parent users.
-- Server-side authorization checks exist for group creation/edit/delete, member management, sessions, attendance, comments, venues, and events.
-- Group member management includes promotion/demotion workflows for group managers.
+- Register and login exist for both web and REST API flows.
+- Web logout exists through `logoutAction()` clearing the session cookie.
+- Mobile logout exists in `badminton-mobile/src/auth/auth-context.tsx` by clearing stored token/user values.
+- `users` table has email, password hash, name, role, photo URL, created/updated timestamps.
+- Roles are modeled as `admin`, `manager`, `coach`, and `parent`.
+- Password hashing uses bcrypt with a cost factor of 12 for registration.
+- JWT creation and verification are implemented with `jose`.
+- Admin-only functionality exists under `/admin` and `/admin/users`, guarded server-side.
+- Admin user management can update global user roles and prevents demoting the last admin.
+- Permission helpers exist in `badminton-web/src/lib/permissions.ts` with tests.
 
 ### Missing / Weak Areas
-- No dedicated global admin user-management panel was found.
-- No UI was found for changing a user's global platform role.
-- Auth does not include refresh tokens, token revocation lists, or advanced session rotation.
+- No password reset or email verification flow was found. These are production features but not required by the official base criterion.
+- Mobile logout is local-token logout only; there is no backend token invalidation because JWTs are stateless.
 
 ### Why Points Were Deducted
-- Deducted 1 point because authentication and authorization are strong for the capstone, but global admin/user-role management is incomplete.
+- No points deducted. Register, login, logout, users, roles, authentication, authorization, password hashing, JWT tokens, and admin/special roles are implemented.
 
 ### Recommended Codex Prompt
 
 ```text
-Add global admin user management:
-- create an admin-only /admin/users page
-- list users with email, name, role, and created date
-- allow admins to change global user roles
-- enforce admin-only access server-side
-- add pagination to the user list
-- keep group-level member management unchanged
-- add clear empty/error states
-
-Do not change the existing login/register/logout behavior.
+Upgrade users and roles toward production readiness:
+- add password reset request and reset-confirm flows
+- add server-side tests for admin-only and manager/coach/parent permissions
+- document the role matrix in README and docs/architecture.md
+- preserve existing JWT/session behavior unless a safe token revocation design is added
 ```
 
-## Scalability — 4 / 5
+## Scalability — 5 / 5
 
 ### Evidence Found
-- Performance seed script exists at `badminton-web/src/db/seed-performance.ts`.
-- Root and web package scripts include `db:seed:performance`.
-- Performance documentation exists at `docs/performance-test.md`.
-- The performance seed is deterministic and uses clearly marked demo addresses such as `performance.user1@badminton.test`.
-- The seed script is scoped to performance data and avoids intentionally deleting unrelated production data.
-- Dataset targets meet the requirement: 3,000 users, 500 groups, 5,000 sessions, 10,000+ attendance records, and 10,000+ comments.
-- Database indexes were added for key large-list and foreign-key access paths.
-- API pagination helpers return metadata including `page`, `pageSize`, `totalCount`, `totalPages`, `hasNextPage`, and `hasPreviousPage`.
-- Sessions, events, comments, groups, and dashboard lists use paging.
-- Web list pages include pagination controls for groups, events, and dashboard session lists.
-- Mobile sessions and events screens use paged loading.
+- API pagination is implemented via `parsePaginationParams`, `paginationMeta`, `limit`, and `offset`.
+- REST list endpoints for groups, sessions, events, announcements, and comments expose paging metadata.
+- UI pagination exists in web pages such as dashboard, admin users, groups/events, and group details.
+- Mobile list screens request paged API results using `page` and `pageSize`.
+- `badminton-web/src/db/seed-performance.ts` creates a large performance dataset:
+  - 3,000 users
+  - 2,500 players
+  - 50 venues
+  - 500 groups
+  - 5,000 sessions
+  - 15,000 attendance records
+  - 15,000 comments
+  - plus memberships and related rows
+- Performance indexes are present in schema and migration files.
+- `scripts/performance-check.mjs` and `docs/performance-test.md` document performance verification.
 
 ### Missing / Weak Areas
-- Announcements API still slices rows in memory after fetching matching rows.
-- Some detail pages necessarily load related records, and very large single-group pages could still benefit from member/comment/attendance sub-pagination.
-- No automated performance benchmark script or timing report was found beyond the seed and documentation.
+- Pagination is offset-based rather than cursor-based; acceptable for the requirement, but cursor pagination would scale better for very large changing datasets.
+- Automated performance checks are local/script-based, not part of CI.
 
 ### Why Points Were Deducted
-- Deducted 1 point for remaining in-memory pagination in announcements and limited measurable performance benchmark automation.
+- No points deducted. The requirement asks for pagination, large dataset handling, at least 10,000 seeded records, indexes, and performance considerations; all are represented.
 
 ### Recommended Codex Prompt
 
 ```text
-Finish scalability hardening:
-- convert /api/announcements to database-level pagination
-- add pagination for large group detail sublists where needed: members, players, announcements, sessions
-- add a lightweight test:performance script that calls key paginated APIs and records response times
-- document measured timings in docs/performance-test.md
-- preserve current response shapes and mobile behavior
-
-Run lint, TypeScript checks, migration, and the performance seed after changes.
+Strengthen scalability verification:
+- add automated performance smoke checks for key API list endpoints
+- record expected response-time thresholds in docs/performance-test.md
+- consider cursor pagination for sessions, comments, and events
+- preserve the existing page/pageSize API contract for mobile compatibility
 ```
 
 ## Web App — 14 / 15
 
 ### Evidence Found
-- Next.js App Router web app exists.
-- Route surface exceeds the minimum 10 screens/pages/popups:
-  - home
-  - login
-  - register
-  - dashboard
-  - groups list
-  - group details
-  - group create/edit/delete
-  - group members
-  - group join
-  - group session create/edit/delete
-  - group announcement create/edit/delete
-  - sessions detail
-  - venues list/create/edit/delete
-  - events list/create/detail/edit/delete
-- Tailwind CSS is used throughout.
-- Reusable UI components exist under `badminton-web/src/components`.
-- Server Actions power web form workflows.
-- UI includes loading/empty/error-oriented components and pagination controls for important large lists.
-- The app supports manager and coach workflows for groups, sessions, attendance, comments, venues, announcements, and events.
+- More than 10 web pages/routes exist, including home, login, register, dashboard, profile, groups, group details, group edit/delete, members, sessions, session details, venues, venue create/edit/delete, events, event details/create/edit/delete, admin dashboard, and admin users.
+- Reusable web components exist in `badminton-web/src/components`, including site header, nav links, stat cards, dashboard session cards, session badges, and shared surface components.
+- Tailwind CSS is used via Next/Tailwind configuration and app styles.
+- Protected pages use server-side authentication redirects.
+- Web UI covers manager and coach workflows: groups, sessions, attendance, comments, events, venues, invitations, members, and profile.
+- Profile/settings page exists at `badminton-web/src/app/profile/page.tsx`.
+- Lint passes with warnings only.
 
 ### Missing / Weak Areas
-- No dedicated profile/settings page was found.
-- No dedicated global admin panel route was found.
-- Some large detail screens could still be split further for very large group membership datasets.
+- No Playwright or browser screenshot verification was found for desktop/mobile browser responsiveness.
+- README screenshot placeholders exist, but actual web screenshots were not found.
+- Some UI uses large decorative gradient sections; the app is functional, but final capstone polish would benefit from verified screenshots and a slightly more operations-focused visual pass.
 
 ### Why Points Were Deducted
-- Deducted 1 point for missing profile/settings and dedicated global admin panel coverage. The web app otherwise satisfies the screen-count and workflow breadth requirements strongly.
+- Deducted 1 point because responsiveness and visual polish were inspected from code structure, not verified in-browser with screenshots, and screenshot/generated visual evidence is incomplete.
 
 ### Recommended Codex Prompt
 
 ```text
-Round out the web app for final capstone polish:
-- add a profile/settings page for the signed-in user
-- add a dedicated /admin dashboard for global admin workflows
-- keep existing groups, sessions, venues, and events pages unchanged except for navigation links
-- ensure protected routes redirect unauthenticated users
-- add responsive empty/loading/error states where missing
-
-Run web lint and build after implementation.
+Polish and verify the web app UI for final capstone review:
+- run the app locally and capture screenshots for dashboard, groups, session detail, events, admin, and profile
+- check desktop and mobile browser layouts
+- fix any text overflow, spacing, or responsive issues found
+- save screenshots under docs/screenshots and update README links
+- keep changes focused on UI polish and evidence, not new features
 ```
 
-## Admin Panel — 3 / 5
+## Admin Panel — 5 / 5
 
 ### Evidence Found
-- `admin` role exists in schema and seed data.
-- Admins receive broad access in service functions such as group/session management.
-- Group managers have a strong special-user dashboard/workflow through group detail and group members pages.
-- Group member management supports assigning coaches, removing users/players, and promoting/demoting group managers.
-- Manager/admin checks exist for venues and events.
+- Admin dashboard exists at `badminton-web/src/app/admin/page.tsx`.
+- Admin user management exists at `badminton-web/src/app/admin/users/page.tsx`.
+- Admin pages check `getCurrentUser()` and redirect non-admins to `/dashboard`.
+- Admin role checks use `canManageUsers`.
+- User role update action enforces admin-only access server-side.
+- Role management includes protection against demoting the last admin.
+- Admin dashboard exposes platform-wide totals and shortcuts to users, groups, venues, and events.
 
 ### Missing / Weak Areas
-- No dedicated `/admin` route or global admin dashboard was found.
-- No global user/role management page was found.
-- Admin behavior is implemented through service checks and manager-oriented pages rather than a clearly separated admin panel.
+- No dedicated tests were found for admin page redirects or admin role mutation behavior.
+- Admin features are sufficient, but could be expanded with audit logs or user search/filtering.
 
 ### Why Points Were Deducted
-- Deducted 2 points because admin/special-user workflows exist, but the official criterion asks for an admin dashboard/panel and user/role management or equivalent protected admin features.
+- No points deducted. The admin dashboard, protected admin routes, and user/role management satisfy the criterion.
 
 ### Recommended Codex Prompt
 
 ```text
-Implement a focused admin panel:
-- add /admin as an admin-only route
-- show summary cards for users, groups, sessions, events, venues, and performance seed data
-- add /admin/users with paginated user and role management
-- reuse existing web UI components
-- enforce admin-only access server-side in page loaders and actions
-- add links from the main navigation only for admin users
-
-Do not remove existing manager/group workflows.
+Add focused admin-panel hardening:
+- add tests or route-level checks proving non-admin users cannot update roles
+- add search and role filtering to /admin/users
+- add a small audit trail for role changes
+- preserve the current admin UI and last-admin protection
 ```
 
 ## Mobile App — 14 / 15
 
 ### Evidence Found
-- Expo React Native app exists in `badminton-mobile`.
-- Expo Router screens include home, login, register, sessions, session details, events, event details, and announcements.
-- Mobile app connects to backend REST APIs through `badminton-mobile/src/lib/api.ts`.
-- Mobile auth context stores and sends Bearer tokens.
-- Session list supports paginated loading and refresh.
-- Event list supports paginated loading and refresh.
-- Session details supports attendance updates and comments.
-- Event details supports registration and cancellation workflows.
-- Announcements screen connects to the announcements API.
-- Reusable mobile UI components and theme files exist.
+- Expo React Native app is configured in `badminton-mobile/package.json` and `app.json`.
+- Expo Router layout exists in `badminton-mobile/src/app/_layout.tsx`.
+- Mobile screens exceed the 5-screen requirement: index, login, register, sessions, session details, groups, group details, announcements, events, event details, and account.
+- Mobile app connects to the backend REST API using `badminton-mobile/src/lib/api.ts`.
+- Screens use Bearer tokens for protected API calls.
+- Auth context handles login, register, logout, token restore, and protected navigation.
+- Native token storage uses Expo SecureStore, with localStorage fallback for web.
+- End-user functionality includes session viewing, attendance actions, comments, event registration/cancellation, groups, announcements, and account/logout.
+- Reusable mobile components and theme files exist.
+- Mobile lint passed.
 
 ### Missing / Weak Areas
-- No mobile group list/group detail screen was found.
-- No dedicated account/profile screen was found.
-- Shared package types are not fully used by the mobile app.
+- No Expo production build artifact, EAS build link, or Expo preview URL was found.
+- No automated mobile UI tests or screenshot evidence were found.
+- Mobile app appears focused on parent/player workflows, which matches the requirement, but coach/manager mobile workflows are limited compared to web.
 
 ### Why Points Were Deducted
-- Deducted 1 point for missing mobile groups/account coverage and limited shared model reuse. The Expo app otherwise strongly meets the mobile criterion.
+- Deducted 1 point because the mobile implementation is strong, but live/exported mobile verification and screenshot evidence are missing.
 
 ### Recommended Codex Prompt
 
 ```text
-Complete the mobile capstone surface:
-- add My Groups and Group Details screens
-- add an Account/Profile screen with user info and logout
-- connect the group screens to efficient REST endpoints
-- reuse the existing mobile theme and navigation
-- move repeated API response types into badminton-shared where practical
-- preserve current sessions, events, announcements, auth, attendance, and comments behavior
-
-Run mobile lint and TypeScript checks after implementation.
+Prepare the Expo mobile app for capstone evaluation:
+- run an Expo web export or EAS preview build
+- document the preview/build URL in README
+- capture screenshots for login, sessions, session details, events, group details, and account
+- verify BADMINTON_API_URL works from a real device or Expo Go
+- fix any layout issues found during device testing
 ```
 
 ## Deployment — 1 / 5
 
 ### Evidence Found
-- Build/development scripts exist for the web and mobile packages.
-- Environment variables are documented in `docs/setup-guide.md`.
-- `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_APP_URL`, and `BADMINTON_API_URL` are referenced in docs/code.
-- Expo config reads the API URL from environment configuration.
-- README has placeholders for live demo URLs.
+- Build/dev scripts exist for root, web, and mobile.
+- Docs mention Vercel for web/API, Neon for PostgreSQL, and Expo/EAS or Expo Go for mobile evaluation.
+- Required environment variables are referenced in code/docs:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `BADMINTON_API_URL`
+  - `NEXT_PUBLIC_APP_URL`
+- Mobile Expo config reads `BADMINTON_API_URL`.
+- Database config supports Neon-compatible PostgreSQL.
 
 ### Missing / Weak Areas
-- No public web deployment URL was verified.
-- No public Expo/mobile deployment or export URL was verified.
-- No Vercel/Netlify/Fly/Render deployment config was found.
-- No EAS config was found.
-- No `.env.example` files were verified.
+- No public deployed web URL was found.
+- No Expo preview, EAS build, or live mobile export URL was found.
+- No Vercel, Netlify, Render, Railway, or equivalent deployment config was found.
+- No `.env.example` files were found.
 - Production environment configuration cannot be verified from the repository.
+- Public app functionality cannot be verified.
 
 ### Why Points Were Deducted
-- Deducted 4 points because deployment is not verifiable. Local setup is documented, but the criterion asks for publicly working deployed apps and production configuration.
+- Deducted 4 points because the official requirement asks for live deployed apps, production environment variables, and public working URLs. The repository has deployment readiness signals, but not verifiable deployment evidence.
 
 ### Recommended Codex Prompt
 
 ```text
-Prepare the project for deployment:
-- add .env.example files for root, badminton-web, and badminton-mobile
-- add docs/deployment-guide.md covering Vercel/Next.js, Neon, JWT_SECRET, and Expo export or EAS
-- add production readiness checks for DATABASE_URL and JWT_SECRET
-- deploy the web app and mobile export
-- update README live demo URLs after deployment
-- never commit real secrets
-
-Verify the deployed API docs, login, events, sessions, and mobile API connection.
+Complete deployment evidence for the capstone:
+- add .env.example files for badminton-web and badminton-mobile
+- add docs/deployment-guide.md covering Vercel, Neon, JWT_SECRET, DATABASE_URL, and BADMINTON_API_URL
+- deploy the Next.js web/API app publicly
+- create an Expo web export or EAS preview build
+- update README with live web URL, mobile preview/build URL, and demo credentials
+- do not commit real secrets
 ```
 
-## Documentation — 5 / 5
+## Documentation — 4.5 / 5
 
 ### Evidence Found
-- Root `README.md` is project-specific and includes description, roles, features, tech stack, screenshots placeholders, live demo placeholders, demo credentials, quick start, and documentation links.
-- `docs/architecture.md` includes architecture explanation and Mermaid diagrams.
-- `docs/database-schema.md` documents tables, relationships, indexes, and ERD-style Mermaid content.
-- `docs/repo-structure.md` explains the monorepo folders and workspace strategy.
-- `docs/setup-guide.md` covers local requirements, install, env vars, database setup, and running web/mobile/monorepo.
-- `docs/performance-test.md` documents the large dataset performance setup.
-- `AGENTS.md` exists and gives project-specific development guidance.
-- API docs endpoint exists at `/api/docs`.
+- Root `README.md` includes project description, tech stack, roles, features, REST API overview, screenshots section, live demo placeholders, demo credentials, quick start, and docs links.
+- `docs/architecture.md` explains monorepo, frontend, backend, mobile, service layer, request flow, auth flow, API communication, and database access.
+- `docs/database-schema.md` documents database schema.
+- `docs/repo-structure.md` documents repository organization.
+- `docs/setup-guide.md` documents local setup, environment variables, migrations, seeding, and troubleshooting.
+- `docs/performance-test.md` documents performance testing.
+- Root `AGENTS.md` exists, with app-specific `AGENTS.md` files in web and mobile.
+- Historical assessments exist under `docs/assessments`, including 2026-05-18 and this 2026-05-19 report.
 
 ### Missing / Weak Areas
-- Deployment documentation is the main remaining documentation gap.
-- Live demo URLs are still placeholders.
+- README live demo URLs are placeholders.
+- README screenshot paths are placeholders; actual screenshot files were not found.
+- README demo credential `demo@badminton.test` does not match the verified seeded role-specific accounts in `seed.ts`.
+- No dedicated deployment guide file was found.
 
 ### Why Points Were Deducted
-- No points deducted for the documentation criterion. The required documentation set is present and evaluator-friendly, with deployment handled separately under the deployment criterion.
+- Deducted 0.5 points for incomplete deployment/demo evidence and placeholder screenshots/URLs. The core documentation is otherwise strong.
 
 ### Recommended Codex Prompt
 
 ```text
-Add final documentation polish:
-- add docs/deployment-guide.md
-- add a screen map for web and mobile routes
-- update README live demo links after deployment
-- add final screenshots for web and mobile
-- ensure docs stay consistent with current routes, scripts, and env vars
-
-Do not include real credentials or secrets.
+Finalize capstone documentation:
+- replace README placeholder URLs with real deployed links
+- replace screenshot placeholders with actual files under docs/screenshots
+- align demo credentials with seeded users from badminton-web/src/db/seed.ts
+- add a dedicated deployment guide
+- update docs so scripts, routes, env vars, and role descriptions match the current code
 ```
 
-## File Storage Bonus — Not implemented
+## File Storage Bonus — Not Awarded
 
 ### Evidence Found
-- Search found schema fields such as photo/avatar URLs in some contexts, but no complete upload/download feature.
-- No Cloudflare R2, S3, signed URL, upload API, or object storage integration was found.
+- `users.photoUrl` exists in the schema and shared types.
+- Documentation/search mentions photo URL fields.
 
 ### Missing / Weak Areas
-- No upload UI.
-- No object storage provider integration.
-- No signed URL flow.
-- No storage backup strategy.
+- No upload/download API was found.
+- No Cloudflare R2, S3, blob, signed URL, or object storage integration was found.
+- No upload UI was found.
+- No file validation or storage backup strategy was found.
+
+### Why Points Were Deducted
+- Bonus not awarded because a complete file storage implementation is not present.
 
 ### Recommended Codex Prompt
 
 ```text
-Add optional file storage support:
-- integrate Cloudflare R2 or another S3-compatible storage provider
-- add secure venue or player photo upload
+Add optional file storage bonus support:
+- integrate Cloudflare R2 or another S3-compatible provider
+- add secure avatar or venue photo upload
 - validate file type and size
-- store object keys or public URLs in the database
-- use signed URLs where appropriate
-- document all required env vars
-
-Keep the app functional in local demo mode without storage credentials.
+- generate signed upload/download URLs where appropriate
+- store only public/signed file references in the database
+- keep local demo mode working without storage credentials
 ```
 
-## Automated Tests Bonus — Not implemented
+## Automated Tests Bonus — Partially Present
 
 ### Evidence Found
-- No Vitest/Jest/Playwright/Cypress test files were found.
-- No `.github/workflows` CI configuration was found.
-- Package scripts do not expose a normal automated test suite.
+- Vitest is configured for `badminton-web`.
+- Test files exist for API validation, pagination, permissions, and session status.
+- Assessment run passed: 4 test files, 17 tests.
 
 ### Missing / Weak Areas
-- No unit tests.
-- No integration tests.
-- No E2E tests.
-- No CI automation.
+- No integration tests for REST API routes were found.
+- No E2E tests with Playwright/Cypress were found.
+- No mobile tests were found.
+- No GitHub Actions workflow was found.
+
+### Why Points Were Deducted
+- Bonus only partially supported. Unit tests exist and pass, but integration/E2E/CI automation is missing.
 
 ### Recommended Codex Prompt
 
 ```text
-Add a focused automated test suite:
-- add Vitest for service/helper tests
-- test pagination helpers, auth validation helpers, session status logic, and permission helpers
-- add Playwright smoke tests for login, dashboard, groups, sessions, and events
-- add GitHub Actions to run lint, TypeScript checks, build, and tests
-- keep tests deterministic and avoid real production services
-
-Start small and prioritize high-risk business logic.
+Expand automated test coverage for the capstone:
+- add API route integration tests for auth, sessions, attendance, comments, events, and admin permissions
+- add Playwright smoke tests for login, dashboard, groups, sessions, events, admin, and profile
+- add a GitHub Actions workflow that runs lint, tests, and build checks
+- keep tests deterministic and avoid requiring production secrets
 ```
 
-## Automated Backups Bonus — Not implemented
+## Automated Backups Bonus — Not Awarded
 
 ### Evidence Found
-- No backup scripts were found.
-- No scheduled GitHub Actions workflows were found.
-- No retention policy or restore guide was found.
+- No backup scripts, scheduled workflows, retention policy, or restore guide were found.
 
 ### Missing / Weak Areas
 - No automated database backup.
 - No file storage backup.
-- No scheduled execution.
-- No restore procedure.
+- No GitHub Actions scheduled workflow.
+- No retention policy.
+
+### Why Points Were Deducted
+- Bonus not awarded because backup automation is not implemented.
 
 ### Recommended Codex Prompt
 
@@ -502,18 +459,16 @@ Start small and prioritize high-risk business logic.
 Add optional backup automation:
 - create a database backup script for PostgreSQL/Neon
 - add a scheduled GitHub Actions workflow
-- store backups in a secure external location
-- include retention policy settings
-- document restore steps
-- use GitHub Actions secrets for credentials
-
-Do not commit database dumps or secrets.
+- store encrypted backup artifacts in a secure external location
+- define retention policy settings
+- document restore steps in docs/backup-and-restore.md
+- do not commit credentials or raw backup files
 ```
 
 ## Highest-Impact Next Steps
 
-1. Add a dedicated global admin panel with paginated user/role management.
-2. Add deployment guide, `.env.example` files, and public deployed URLs.
-3. Move shared API models into `badminton-shared` and use them from web/mobile.
-4. Replace remaining in-memory pagination in announcements and large detail sublists.
-5. Add tests and CI for bonus credibility and safer final submission.
+1. Add deployment evidence: live web URL, Expo preview/export URL, `.env.example` files, and a deployment guide.
+2. Replace README placeholder screenshots and demo URLs with real capstone evidence.
+3. Add API integration tests and GitHub Actions CI.
+4. Add browser/mobile screenshot verification for final UI confidence.
+5. Optionally implement file storage and backups for bonus readiness.
