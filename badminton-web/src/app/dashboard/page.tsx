@@ -1,5 +1,6 @@
 import { CalendarCheck2, CircleHelp, Sparkles, Trophy } from "lucide-react";
-import { gte } from "drizzle-orm";
+import { count, gte } from "drizzle-orm";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
@@ -9,16 +10,109 @@ import { EmptyState, SectionHeader } from "@/components/ui/surfaces";
 import { db, events } from "@/db";
 import { getDashboardSessions, type SessionCardData } from "@/lib/session-data";
 
+const dashboardSessionPageSize = 6;
+
+type DashboardSearchParams = {
+  activePage?: string | string[];
+  archivePage?: string | string[];
+};
+
+type SessionPaging = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
+function parsePositivePage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return Math.max(Number(raw ?? "1") || 1, 1);
+}
+
+function dashboardPageHref(kind: "active" | "archive", page: number, current: DashboardSearchParams) {
+  const params = new URLSearchParams();
+  const activePage = kind === "active" ? page : parsePositivePage(current.activePage);
+  const archivePage = kind === "archive" ? page : parsePositivePage(current.archivePage);
+
+  if (activePage > 1) {
+    params.set("activePage", String(activePage));
+  }
+
+  if (archivePage > 1) {
+    params.set("archivePage", String(archivePage));
+  }
+
+  const query = params.toString();
+  return query ? `/dashboard?${query}` : "/dashboard";
+}
+
+function PaginationControls({
+  kind,
+  paging,
+  searchParams,
+}: {
+  kind: "active" | "archive";
+  paging: SessionPaging;
+  searchParams: DashboardSearchParams;
+}) {
+  if (paging.totalPages <= 1) {
+    return null;
+  }
+
+  const previousPage = Math.max(paging.page - 1, 1);
+  const nextPage = Math.min(paging.page + 1, paging.totalPages);
+
+  return (
+    <nav
+      aria-label={`${kind === "active" ? "Active" : "Archive"} sessions pagination`}
+      className="mt-6 flex flex-col gap-3 rounded-3xl bg-white p-4 text-sm font-bold text-zinc-700 shadow-sm ring-1 ring-zinc-950/5 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>
+        Page {paging.page} of {paging.totalPages}
+        <span className="font-semibold text-zinc-500"> · {paging.total} total</span>
+      </p>
+      <div className="flex gap-2">
+        {paging.page > 1 ? (
+          <Link
+            href={dashboardPageHref(kind, previousPage, searchParams)}
+            className="rounded-full border border-zinc-200 px-4 py-2 text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50"
+          >
+            Previous
+          </Link>
+        ) : (
+          <span className="rounded-full border border-zinc-100 px-4 py-2 text-zinc-300">Previous</span>
+        )}
+        {paging.page < paging.totalPages ? (
+          <Link
+            href={dashboardPageHref(kind, nextPage, searchParams)}
+            className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800"
+          >
+            Next
+          </Link>
+        ) : (
+          <span className="rounded-full bg-zinc-100 px-4 py-2 text-zinc-300">Next</span>
+        )}
+      </div>
+    </nav>
+  );
+}
+
 function SessionSection({
   title,
   description,
   sessions,
+  paging,
+  pagingKind,
+  searchParams,
   emptyText,
   archive = false,
 }: {
   title: string;
   description: string;
   sessions: SessionCardData[];
+  paging: SessionPaging;
+  pagingKind: "active" | "archive";
+  searchParams: DashboardSearchParams;
   emptyText: string;
   archive?: boolean;
 }) {
@@ -26,9 +120,9 @@ function SessionSection({
     <section>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <SectionHeader title={title} description={description} eyebrow={archive ? "Archive" : "This week"} />
-        {sessions.length ? (
+        {paging.total ? (
           <p className="rounded-full bg-white px-4 py-2 text-sm font-black text-zinc-700 shadow-sm ring-1 ring-zinc-950/5">
-            {sessions.length} sessions
+            {paging.total} sessions
           </p>
         ) : null}
       </div>
@@ -44,21 +138,33 @@ function SessionSection({
           <EmptyState title="No sessions here yet" description={emptyText} />
         </div>
       )}
+      <PaginationControls kind={pagingKind} paging={paging} searchParams={searchParams} />
     </section>
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<DashboardSearchParams>;
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login?next=/dashboard");
   }
 
-  const [{ activeSessions, archiveSessions }, eventRows] = await Promise.all([
-    getDashboardSessions(user),
+  const resolvedSearchParams = await searchParams;
+  const activePage = parsePositivePage(resolvedSearchParams.activePage);
+  const archivePage = parsePositivePage(resolvedSearchParams.archivePage);
+  const [{ activeSessions, archiveSessions, paging }, [{ total: openEventsCount }]] = await Promise.all([
+    getDashboardSessions(user, {
+      activePage,
+      archivePage,
+      pageSize: dashboardSessionPageSize,
+    }),
     db
-      .select({ id: events.id })
+      .select({ total: count() })
       .from(events)
       .where(gte(events.eventDate, new Date())),
   ]);
@@ -70,6 +176,10 @@ export default async function DashboardPage() {
     (total, session) => total + session.attendanceSummary["no response"],
     0,
   );
+
+  if (!paging) {
+    throw new Error("Dashboard session paging is required.");
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -106,7 +216,7 @@ export default async function DashboardPage() {
       <section className="-mt-5 grid gap-4 px-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Upcoming sessions"
-          value={activeSessions.length}
+          value={paging.active.total}
           detail="Open or current"
           icon={CalendarCheck2}
           tone="emerald"
@@ -114,20 +224,20 @@ export default async function DashboardPage() {
         <StatCard
           title="Players attending"
           value={attendingCount}
-          detail="Across active sessions"
+          detail="Visible active page"
           icon={Sparkles}
           tone="sky"
         />
         <StatCard
           title="Pending responses"
           value={pendingResponses}
-          detail="No response yet"
+          detail="Visible active page"
           icon={CircleHelp}
           tone="violet"
         />
         <StatCard
           title="Events open"
-          value={eventRows.length}
+          value={openEventsCount}
           detail="Public club events"
           icon={Trophy}
           tone="amber"
@@ -139,12 +249,18 @@ export default async function DashboardPage() {
           title="Active Sessions"
           description="Upcoming and current sessions that are open for attendance updates."
           sessions={activeSessions}
+          paging={paging.active}
+          pagingKind="active"
+          searchParams={resolvedSearchParams}
           emptyText="There are no active sessions for your groups."
         />
         <SessionSection
           title="Archive Sessions"
           description="Past sessions and canceled sessions for your groups, kept quieter for quick reference."
           sessions={archiveSessions}
+          paging={paging.archive}
+          pagingKind="archive"
+          searchParams={resolvedSearchParams}
           emptyText="There are no archived sessions for your groups."
           archive
         />

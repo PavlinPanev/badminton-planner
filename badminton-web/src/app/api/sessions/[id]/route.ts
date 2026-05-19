@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 
 import { getApiUser, jsonError } from "@/auth/api";
-import { getSessionDetailForUser } from "@/lib/session-data";
+import { parseRequiredId } from "@/lib/api-validation";
+import { getSessionDetail } from "@/services/sessions-service";
 
 export async function GET(
   request: NextRequest,
@@ -14,13 +15,13 @@ export async function GET(
   }
 
   const { id } = await params;
-  const sessionId = Number(id);
+  const parsedId = parseRequiredId(id, "Session id must be a number.");
 
-  if (!Number.isInteger(sessionId)) {
-    return jsonError("Session id must be a number.", 400);
+  if (!parsedId.success) {
+    return jsonError(parsedId.error, 400);
   }
 
-  const result = await getSessionDetailForUser(sessionId, auth.user);
+  const result = await getSessionDetail(auth.user, parsedId.value);
 
   if (result.status === "not-found") {
     return jsonError("Session not found.", 404);
@@ -30,37 +31,5 @@ export async function GET(
     return jsonError("You are not a member of this session group.", 403);
   }
 
-  const session = result.session;
-
-  return Response.json({
-    data: {
-      id: session.id,
-      date: session.sessionDate,
-      time: session.startTime,
-      venue: { name: session.venueName },
-      group: { id: session.groupId, title: session.groupTitle },
-      coach: { name: session.coachName },
-      state: session.state,
-      active: session.active,
-      canceled: session.canceled,
-      capacity: session.capacity,
-      capacityState: session.capacityState,
-      attendanceSummary: session.attendanceSummary,
-      attendance: session.members.map((member) => ({
-        memberId: member.id,
-        playerId: member.playerId,
-        userId: member.userId,
-        name: member.name,
-        role: member.role,
-        status: member.attendance,
-        note: member.note,
-      })),
-      comments: session.comments.map((comment) => ({
-        id: comment.id,
-        text: comment.text,
-        authorName: comment.authorName,
-        commentedAt: comment.commentedAt,
-      })),
-    },
-  });
+  return Response.json({ data: result.data });
 }

@@ -1,48 +1,20 @@
-import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
-
-import { createSessionToken } from "@/auth/token";
-import { db, users } from "@/db";
+import { jsonError } from "@/auth/api";
+import { parseLoginBody } from "@/lib/api-validation";
+import { loginWithPassword } from "@/services/auth-service";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
-  const email = String(body?.email ?? "")
-    .trim()
-    .toLowerCase();
-  const password = String(body?.password ?? "");
+  const parsed = parseLoginBody(body);
 
-  if (!email || !password) {
-    return Response.json({ error: { message: "Email and password are required." } }, { status: 400 });
+  if (!parsed.success) {
+    return jsonError(parsed.error, 400);
   }
 
-  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const result = await loginWithPassword(parsed.data.email, parsed.data.password);
 
-  if (!user) {
-    return Response.json({ error: { message: "The email or password is incorrect." } }, { status: 401 });
+  if (result.error) {
+    return jsonError(result.error.message, result.error.status);
   }
 
-  const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-
-  if (!passwordMatches) {
-    return Response.json({ error: { message: "The email or password is incorrect." } }, { status: 401 });
-  }
-
-  const token = await createSessionToken({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  });
-
-  return Response.json({
-    token,
-    tokenType: "Bearer",
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      photoUrl: user.photoUrl,
-    },
-  });
+  return Response.json(result.data);
 }

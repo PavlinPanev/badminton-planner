@@ -26,11 +26,16 @@ A badminton planner app: users log in, view groups and sessions, mark attendance
 ## Mobile UI Guidelines
 
 - Build a user-friendly mobile interface optimized for quick session checks and attendance updates.
+- Keep the product colorful, friendly, sporty, and youth-oriented while preserving operational clarity.
+- Use a bright balanced palette inspired by badminton courts and shuttles: emerald/teal, lime, sky blue, violet, and amber.
+- Prefer rounded cards, soft shadows, clear badges, accessible icons, and lively but restrained gradients for major dashboard and session surfaces.
+- Do not use real member, parent, or child photos in demo UI. Use demo-safe generated data, icons, local SVG-style decoration, or abstract sporty gradients.
 - Use stack navigation for drill-down flows such as group details, session details, comments, and events.
 - Keep touch targets comfortable and layouts responsive across phones, tablets, and web builds.
 - Use native-feeling controls where appropriate, while preserving consistent visual language.
 - Keep attendance actions easy to find and hard to trigger accidentally.
 - Avoid exposing manager or coach-only controls to users who should only view sessions and mark attendance.
+
 
 ## Mobile UI Alerts
 

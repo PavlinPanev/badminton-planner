@@ -1,85 +1,152 @@
 # Badminton Club Planner
-Badminton Planner is a full-stack club planning system for badminton clubs. It helps club managers create and organize groups, coaches manage sessions and attendance, and parents or players view upcoming sessions, mark attendance, and follow comments and events.
-“Badminton Club Planner” app: a software product for a badminton club to organize training groups, sessions, venues, attendance and club events.
-· The app holds training groups, where badminton sessions are organized.
-· Groups have coaches, managers, players and parents / members.
-· Sessions are announced in groups and members can mark attendance / absence / maybe, comment and view session details.
-· Club events such as camps, tournaments and social badminton sessions can be announced and users can register for them.
-· The app can use public information from a real badminton club website for demo venues, public training types and public event categories, but all personal user, parent and child data must be generated demo data.
 
-The project is organized as an npm workspace with a Next.js web app, an Expo mobile app, and a shared package for cross-app types and utilities.
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-App%20Router-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111111)
+![Expo](https://img.shields.io/badge/Expo-React%20Native-000020?logo=expo&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle%20ORM-Type%20Safe-C5F74F)
+![Status](https://img.shields.io/badge/Capstone-Full%20Stack%20Apps%20with%20AI-6B7280)
 
-- `badminton-web/`: Next.js web application and backend/API layer using React, Tailwind CSS, Neon Postgres, and Drizzle ORM.
-- `badminton-mobile/`: Expo React Native app using Expo Router and the RESTful backend API with Bearer token authentication.
-- `badminton-shared/`: shared types, constants, validation helpers, and framework-neutral utilities.
+Badminton Club Planner is a full-stack monorepo application for badminton clubs. It helps club staff manage training groups, training sessions, venues, attendance, comments, club events, coaches, parents, and players from one coordinated system.
 
-The web app supports club management and coaching workflows. The mobile app focuses on logged-in users viewing groups and sessions, marking attendance, and reading comments and events.
+The project contains a Next.js web application for club administration and coaching workflows, a REST API for mobile clients, a PostgreSQL database managed with Drizzle ORM, and an Expo React Native mobile app for parents and players. It was built as an educational capstone project for the **Full Stack Apps with AI** course.
 
-# Roles in the App
-· Visitor: can view home page, public venues, public events and register in the app.
-· User: can manage own profile, view public events and join a training group by invitation.
-· Parent / group member: can view child training sessions, mark attendance, comment on sessions, view announcements.
-· Coach / group manager: can create and manage training sessions, view attendance and manage group communication.
-· Club manager: can manage venues, groups, coaches, members, sessions and events.
-· Admins (optional): can view / manage all users, groups, venues, sessions and events.
+The seeded database contains generated demonstration data for safe evaluation and walkthroughs. Demo names, events, groups, venues, attendance records, and comments are fictional.
 
-# Visitors
-Visitors are anonymous actors who visit the app Web site.
-· Visitors can see the app home page and public club information.
-· Visitors can view public venues and public events.
-· Visitors can register in the app by email + password.
-· Visitors cannot view private training groups, child/player data, attendance or comments.
+## User Roles
 
-# Registered Users
-Registered users in the app have a profile with name, email and photo (optional) and can login / logout.
-· Registered users can manage their own profile.
-· Registered users can view public events and club information.
-· Registered users can join an existing training group by invitation.
-· Once an invite link is accepted, a user joins the group and becomes a group member.
-· A user can be connected to one or more players / children.
-· For demo purposes, players and children should use generated sample names, not real personal data.
+| Role | Purpose |
+| --- | --- |
+| Visitor | Can view public entry points and register or sign in. |
+| Registered User | Has an account and can access authenticated app areas. |
+| Parent / Group Member | Views sessions, events, comments, announcements, and attendance for their players or groups. |
+| Coach | Manages training sessions, attendance, and session communication. |
+| Club Manager | Creates and manages groups, venues, sessions, invitations, events, and members. |
+| Admin | Oversees platform data and administrative workflows. |
 
-# Coaches and Club Managers
-Coaches and club managers organize badminton training activity.
-· Coaches manage the training sessions in their assigned groups.
-· Club managers organize the club structure: venues, groups, coaches, players and events.
-· Coaches / managers can create / edit / cancel / delete training sessions.
-· Training sessions hold: date, time, venue, group, coach, capacity, canceled (yes/no).
-· Club managers can invite users to join groups by sharing an invite link.
-· Club managers can promote / remove other group members as coaches or managers.
-· Club managers can remove users / players from their groups.
-· Club managers can create club events: tournaments, camps, social badminton sessions and open trainings.
+## Features
 
-# Group Members and Training Sessions
-Group members can browse training sessions in their groups: upcoming, current and past sessions.
-· Always display the state of each session: upcoming | current | past, note if canceled, full capacity | under capacity | over capacity.
-· A session is upcoming if its start time is not yet reached.
-· At its start time the session becomes current until its end time.
-· After the end time the session becomes past.
-· A session can be canceled by a coach or club manager, so it will not happen.
-· A session is open for attendance updates when it is upcoming or current and is not canceled.
-· Display the list of expected players and attendance responses for the session.
-Group members can mark attendance for a session:
-· A parent / member can mark a player as attending.
-· A parent / member can mark a player as not attending.
-· A parent / member can mark a player as maybe.
-· A parent / member can update the attendance response before the session starts.
-· A parent / member can leave a short attendance note, e.g. “We will be 10 minutes late” or “Cannot attend today”.
-· Coaches can view all attendance responses and prepare the session according to the expected number of players.
-· Do not store real sensitive children’s data in the public demo app.
-Group members can post comments on training sessions:
-· Examples: “Will be 10 mins late”, “Can we borrow a racket?”, “Please bring indoor shoes”, “Tournament preparation today”, …
-· Comments are listed after the session details.
-· Comments can be edited / deleted by their owner and by coaches / group managers.
+### Authentication
 
-# Club Events
-Club events are special activities outside regular training sessions.
-· Examples: children’s tournament, amateur tournament, training camp, social badminton weekend, open day.
-· Events hold: title, description, venue, date, time, capacity, visibility, canceled (yes/no).
-· Users can view public events.
-· Logged-in users can register / cancel registration for events if registration is open.
-· Club managers can create / edit / cancel / delete events.
+- Account registration and login.
+- JWT-based authentication for REST API clients.
+- Password hashing with bcrypt, with architecture support for argon2 if adopted later.
+- Role-aware navigation and server-side authorization checks.
 
-# Web App and Mobile App
-· The Web app is the primary app for this project. It implements the entire app functionality: users, group management, group members, venue management, session management, event management, attendance and dashboards.
-· The mobile app is an additional, scope-limited app, which implements only the most important parent / member functionality: login / register, view sessions, mark attendance, view comments and view / join events.
+### Group Management
+
+- Create and edit training groups.
+- Assign venues, levels, and age ranges.
+- Manage group members, coaches, managers, parents, and players.
+- Generate group invitation links and invite codes.
+
+### Sessions
+
+- Schedule training sessions by group, venue, date, time, coach, and capacity.
+- Display upcoming and past sessions.
+- Support session cancellation and session detail views.
+- Share session information with group members.
+
+### Attendance
+
+- Track attendance per player and session.
+- Mark status as attending, absent, or maybe.
+- Store parent notes and attendance timestamps.
+- Expose attendance updates through web workflows and mobile API routes.
+
+### Comments
+
+- Add session comments for coordination between coaches, managers, and families.
+- Display conversation history on session detail pages.
+- Support REST API access for mobile session comments.
+
+### Events
+
+- Create, edit, list, cancel, and delete club events.
+- Register users and players for events.
+- Track registration status such as registered, waitlisted, or canceled.
+- Connect events to venues and capacity limits.
+
+### Mobile App
+
+- Expo React Native app with Expo Router navigation.
+- Parent-friendly screens for sessions, events, announcements, login, and registration.
+- Secure token storage for authenticated API access.
+- Configurable backend URL through `BADMINTON_API_URL`.
+
+### REST API
+
+- Mobile-oriented REST endpoints under the Next.js App Router.
+- Bearer token authentication.
+- Stable JSON error shape: `{ "error": { "message": "..." } }`.
+- Endpoints for authentication, sessions, attendance, comments, events, and announcements.
+
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Frontend | Next.js App Router, React, TypeScript, Tailwind CSS |
+| Backend | Next.js route handlers, Server Actions, service/data helpers |
+| Database | PostgreSQL hosted on Neon DB |
+| ORM | Drizzle ORM and Drizzle Kit migrations |
+| Mobile | Expo, React Native, Expo Router |
+| Authentication | JWT Bearer tokens, secure cookies/session helpers, bcrypt password hashing |
+| Deployment | Netlify for web/API and Expo web preview, Neon for PostgreSQL |
+
+## Screenshots
+
+### Web App
+
+| Dashboard | Groups | Events |
+| --- | --- | --- |
+| Add screenshot: `docs/screenshots/web-dashboard.png` | Add screenshot: `docs/screenshots/web-groups.png` | Add screenshot: `docs/screenshots/web-events.png` |
+
+### Mobile App
+
+| Sessions | Session Details | Events |
+| --- | --- | --- |
+| Add screenshot: `docs/screenshots/mobile-sessions.png` | Add screenshot: `docs/screenshots/mobile-session-details.png` | Add screenshot: `docs/screenshots/mobile-events.png` |
+
+## Live Demo
+
+| Resource | URL |
+| --- | --- |
+| Web App and REST API | https://badminton-planner-web.netlify.app |
+| Mobile App Preview | https://badminton-planner-mobile.netlify.app |
+| API Docs | https://badminton-planner-web.netlify.app/api/docs |
+| GitHub Repository | https://github.com/Pavlin-Panev/badminton-planner |
+
+The Netlify URLs above are capstone evaluation URLs. Replace them with the final deployed URLs before submission if the site names change.
+
+## Demo Credentials
+
+All seeded demo accounts use password `pass123`.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@badminton.test` | `pass123` |
+| Manager | `desislava.ivanova@badminton.test` | `pass123` |
+| Coach | `georgi.stoyanov@badminton.test` | `pass123` |
+| Coach | `petar.kolev@badminton.test` | `pass123` |
+| Parent | `elena.dimitrova@badminton.test` | `pass123` |
+| Parent | `ivan.mihaylov@badminton.test` | `pass123` |
+| Parent | `silvia.vasileva@badminton.test` | `pass123` |
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+For database configuration, migrations, seeding, deployment, and mobile networking setup, follow the full [local setup guide](docs/setup-guide.md) and [deployment guide](docs/deployment-guide.md).
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Database Schema](docs/database-schema.md)
+- [Deployment Guide](docs/deployment-guide.md)
+- [Performance Test](docs/performance-test.md)
+- [Repository Structure](docs/repo-structure.md)
+- [Setup Guide](docs/setup-guide.md)

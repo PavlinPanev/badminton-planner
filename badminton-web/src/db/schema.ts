@@ -87,6 +87,7 @@ export const venues = pgTable(
     address: text("address").notNull(),
     city: varchar("city", { length: 120 }).notNull(),
     description: text("description"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -139,6 +140,46 @@ export const groupMembers = pgTable(
   ],
 );
 
+export const groupInvitations = pgTable(
+  "group_invitations",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    inviteCode: varchar("invite_code", { length: 96 }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("group_invitations_invite_code_idx").on(table.inviteCode),
+    index("group_invitations_group_id_idx").on(table.groupId),
+    index("group_invitations_user_id_idx").on(table.userId),
+  ],
+);
+
+export const groupAnnouncements = pgTable(
+  "group_announcements",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    authorId: integer("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    title: varchar("title", { length: 255 }).notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("group_announcements_group_id_idx").on(table.groupId),
+    index("group_announcements_author_id_idx").on(table.authorId),
+  ],
+);
+
 export const sessions = pgTable(
   "sessions",
   {
@@ -160,8 +201,11 @@ export const sessions = pgTable(
   (table) => [
     index("sessions_group_id_idx").on(table.groupId),
     index("sessions_session_date_idx").on(table.sessionDate),
+    index("sessions_group_date_time_idx").on(table.groupId, table.sessionDate, table.startTime),
     index("sessions_venue_id_idx").on(table.venueId),
+    index("sessions_venue_date_idx").on(table.venueId, table.sessionDate),
     index("sessions_coach_user_id_idx").on(table.coachUserId),
+    index("sessions_coach_date_idx").on(table.coachUserId, table.sessionDate),
     check("sessions_capacity_positive", sql`${table.capacity} is null or ${table.capacity} > 0`),
   ],
 );
@@ -183,6 +227,8 @@ export const sessionAttendance = pgTable(
   },
   (table) => [
     uniqueIndex("session_attendance_session_player_idx").on(table.sessionId, table.playerId),
+    index("session_attendance_session_id_idx").on(table.sessionId),
+    index("session_attendance_player_id_idx").on(table.playerId),
     index("session_attendance_parent_user_id_idx").on(table.parentUserId),
   ],
 );
@@ -202,6 +248,7 @@ export const sessionComments = pgTable(
   },
   (table) => [
     index("session_comments_session_id_idx").on(table.sessionId),
+    index("session_comments_session_time_idx").on(table.sessionId, table.commentedAt),
     index("session_comments_user_id_idx").on(table.userId),
   ],
 );
@@ -258,6 +305,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   players: many(players),
   coachedSessions: many(sessions),
   groupMemberships: many(groupMembers),
+  groupInvitations: many(groupInvitations),
+  groupAnnouncements: many(groupAnnouncements),
   attendanceMarks: many(sessionAttendance),
   sessionComments: many(sessionComments),
   eventRegistrations: many(eventRegistrations),
@@ -285,7 +334,9 @@ export const groupsRelations = relations(groups, ({ one, many }) => ({
     references: [venues.id],
   }),
   members: many(groupMembers),
+  invitations: many(groupInvitations),
   sessions: many(sessions),
+  announcements: many(groupAnnouncements),
 }));
 
 export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
@@ -300,6 +351,28 @@ export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
   player: one(players, {
     fields: [groupMembers.playerId],
     references: [players.id],
+  }),
+}));
+
+export const groupInvitationsRelations = relations(groupInvitations, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupInvitations.groupId],
+    references: [groups.id],
+  }),
+  user: one(users, {
+    fields: [groupInvitations.userId],
+    references: [users.id],
+  }),
+}));
+
+export const groupAnnouncementsRelations = relations(groupAnnouncements, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupAnnouncements.groupId],
+    references: [groups.id],
+  }),
+  author: one(users, {
+    fields: [groupAnnouncements.authorId],
+    references: [users.id],
   }),
 }));
 

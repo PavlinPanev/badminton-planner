@@ -15,6 +15,34 @@
       "when": 1779103818381,
       "tag": "0001_eager_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779148800000,
+      "tag": "0002_group_invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779235200000,
+      "tag": "0003_venue_archiving",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779171963071,
+      "tag": "0004_stale_impossible_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779238800000,
+      "tag": "0005_performance_indexes",
+      "breakpoints": true
     }
   ]
 }

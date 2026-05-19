@@ -1,0 +1,43 @@
+{
+  "measuredAt": "2026-05-19T11:05:14.797Z",
+  "baseUrl": "http://localhost:3000",
+  "email": "performance.user1@badminton.test",
+  "checks": [
+    {
+      "label": "POST /api/auth/login",
+      "path": "/api/auth/login",
+      "status": 200,
+      "elapsedMs": 2293
+    },
+    {
+      "label": "GET /api/sessions",
+      "path": "/api/sessions?page=1&pageSize=20",
+      "status": 200,
+      "elapsedMs": 1456
+    },
+    {
+      "label": "GET /api/events",
+      "path": "/api/events?page=1&pageSize=20",
+      "status": 200,
+      "elapsedMs": 242
+    },
+    {
+      "label": "GET /api/announcements",
+      "path": "/api/announcements?page=1&pageSize=20",
+      "status": 200,
+      "elapsedMs": 1556
+    },
+    {
+      "label": "GET /api/sessions/[id]",
+      "path": "/api/sessions/8681",
+      "status": 200,
+      "elapsedMs": 3626
+    },
+    {
+      "label": "GET /api/sessions/[id]/comments",
+      "path": "/api/sessions/8681/comments?page=1&pageSize=20",
+      "status": 200,
+      "elapsedMs": 1663
+    }
+  ]
+}

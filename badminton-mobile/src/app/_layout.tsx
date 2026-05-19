@@ -1,16 +1,61 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack, usePathname, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { AuthProvider, useAuth } from '@/auth/auth-context';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const publicRoutes = new Set(['/', '/login', '/register']);
+
+function ProtectedStack() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { isLoading, isLoggedIn } = useAuth();
+  const isPublicRoute = publicRoutes.has(pathname);
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn && !isPublicRoute) {
+      router.replace('/login' as never);
+    }
+  }, [isLoading, isLoggedIn, isPublicRoute, router]);
+
+  if (isLoading || (!isLoggedIn && !isPublicRoute)) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0a66c2" />
+      </View>
+    );
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
+      <Stack.Screen name="login" options={{ title: 'Login' }} />
+      <Stack.Screen name="register" options={{ title: 'Register' }} />
+      <Stack.Screen name="sessions" options={{ title: 'Sessions' }} />
+      <Stack.Screen name="session-details" options={{ title: 'Session Details' }} />
+      <Stack.Screen name="announcements" options={{ title: 'Announcements' }} />
+      <Stack.Screen name="events" options={{ title: 'Events' }} />
+      <Stack.Screen name="event-details" options={{ title: 'Event Details' }} />
+      <Stack.Screen name="groups" options={{ title: 'My Groups' }} />
+      <Stack.Screen name="group-details" options={{ title: 'Group Details' }} />
+      <Stack.Screen name="account" options={{ title: 'Account' }} />
+    </Stack>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <ProtectedStack />
+    </AuthProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+});

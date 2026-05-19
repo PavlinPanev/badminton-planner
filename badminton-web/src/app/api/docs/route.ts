@@ -71,6 +71,23 @@ export async function GET() {
             </section>
 
             <section>
+              <h2><span class="method">GET</span> /api/sessions/[id]/comments</h2>
+              <p>Lists session comments visible to the authenticated user.</p>
+            </section>
+
+            <section>
+              <h2><span class="method">POST</span> /api/sessions/[id]/comments</h2>
+              <pre>{"text":"Bring spare rackets for warmup."}</pre>
+              <p>Adds a new session comment for users who can view the session.</p>
+            </section>
+
+            <section>
+              <h2><span class="method">PATCH</span> /api/sessions/[id]/comments/[commentId]</h2>
+              <pre>{"text":"Updated comment text."}</pre>
+              <p>Edits a comment owned by the user or manageable by the user's group role.</p>
+            </section>
+
+            <section>
               <h2><span class="method">GET</span> /api/events?page=1&pageSize=20</h2>
               <p>Lists upcoming public events.</p>
             </section>

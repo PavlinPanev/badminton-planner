@@ -1,0 +1,9 @@
+
+> badminton-mobile@1.0.0 dev
+> node ./scripts/run-expo.js start
+
+env: load .env
+env: export BADMINTON_API_URL
+Starting project at D:\Data\GitHub\Full-Stack-Apps-With-AI\badminton-planner\badminton-mobile
+› Port 8081 is being used by another process
+› Skipping dev server
