@@ -69,6 +69,7 @@ export type SessionDetailData = SessionCardData & {
   members: SessionMemberData[];
   comments: {
     id: number;
+    userId: number;
     text: string;
     commentedAt: Date;
     authorName: string;
@@ -371,6 +372,7 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
     db
       .select({
         id: sessionComments.id,
+        userId: sessionComments.userId,
         text: sessionComments.text,
         commentedAt: sessionComments.commentedAt,
         authorName: users.name,

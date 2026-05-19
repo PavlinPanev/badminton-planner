@@ -1,0 +1,20 @@
+
+> badminton-web@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.2.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://10.15.75.70:3000
+- Environments: .env
+✓ Ready in 2.3s
+
+○ Compiling /dashboard ...
+ GET /dashboard 200 in 11.8s (next.js: 8.0s, proxy.ts: 483ms, application-code: 3.3s)
+○ Compiling /api/events ...
+ GET /api/events?page=1&pageSize=50 200 in 4.1s (next.js: 3.6s, proxy.ts: 13ms, application-code: 519ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 4.4s (next.js: 3.6s, proxy.ts: 13ms, application-code: 764ms)
+ GET /sessions/7 200 in 1229ms (next.js: 40ms, proxy.ts: 21ms, application-code: 1168ms)
+ GET /sessions/7 200 in 7.1s (next.js: 4.6s, proxy.ts: 577ms, application-code: 1867ms)
+ POST /sessions/7 200 in 1646ms (next.js: 458ms, proxy.ts: 23ms, application-code: 1165ms)
+  └─ ƒ addSessionCommentAction({}, {}) in 352ms ..//src/app/sessions/[id]/actions.ts
+ GET / 200 in 3.5s (next.js: 2.5s, proxy.ts: 17ms, application-code: 1022ms)

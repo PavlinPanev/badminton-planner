@@ -1,0 +1,28 @@
+
+> badminton-mobile@1.0.0 dev
+> node ./scripts/run-expo.js start
+
+env: load .env
+env: export BADMINTON_API_URL
+Starting project at D:\Data\GitHub\Full-Stack-Apps-With-AI\badminton-planner\badminton-mobile
+Using src/app as the root directory for Expo Router.
+React Compiler enabled
+Expo Autolinking module resolution enabled
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web badminton-mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web badminton-mobile\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 75.1% (591/682)
+λ node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ▓▓▓▓▓▓▓░░░░░░░░░ 49.8% (397/566)
+Web Bundled 5561ms badminton-mobile\node_modules\expo-router\entry.js (829 modules)
+λ Bundled 5611ms node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (879 modules)
+Web badminton-mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 956ms badminton-mobile\node_modules\expo-router\entry.js (811 modules)
+ LOG  [web] Logs will appear in the browser console
+Web badminton-mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 2435ms node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+Web Bundled 3126ms badminton-mobile\node_modules\expo-router\entry.js (1 module)
+Web badminton-mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 92ms node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+Web Bundled 671ms badminton-mobile\node_modules\expo-router\entry.js (1 module)

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Clock3, MapPin, MessageCircle, UserRoundCheck } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, UserRoundCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
@@ -10,6 +10,7 @@ import { canCancelSession, getAttendanceTargetsForUser, getSessionDetailForUser 
 import { formatSessionDate, formatSessionTime, getSessionEnd, sessionDurationMinutes } from "@/lib/session-status";
 import { AttendanceForm } from "./attendance-form";
 import { cancelSessionAction } from "./actions";
+import { CommentsPanel } from "./comments-panel";
 import { ShareSessionButton } from "./share-session-button";
 
 export default async function SessionPage({
@@ -230,29 +231,15 @@ export default async function SessionPage({
 
       <section className="mt-10">
         <SectionHeader eyebrow="Team notes" title="Comments" description="Coach notes and parent comments for this session." />
-        <div className="mt-5 space-y-3">
-          {session.comments.length ? (
-            session.comments.map((comment) => (
-              <article key={comment.id} className="rounded-3xl border border-white/80 bg-white p-5 shadow-sm">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="inline-flex items-center gap-2 text-sm font-black text-zinc-950">
-                    <MessageCircle aria-hidden="true" className="h-4 w-4 text-sky-600" />
-                    {comment.authorName}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {new Intl.DateTimeFormat("en", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(comment.commentedAt)}
-                  </p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">{comment.text}</p>
-              </article>
-            ))
-          ) : (
-            <EmptyState title="No comments yet" description="No coach notes or parent comments have been added." />
-          )}
-        </div>
+        <CommentsPanel
+          sessionId={session.id}
+          comments={session.comments.map((comment) => ({
+            ...comment,
+            commentedAt: comment.commentedAt.toISOString(),
+          }))}
+          currentUserId={user.id}
+          canManageComments={session.manageable}
+        />
       </section>
     </div>
   );
