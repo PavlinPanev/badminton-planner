@@ -26,6 +26,7 @@ type AuthContextValue = {
   token: string | null;
   user: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -95,6 +96,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(body.user);
   }, []);
 
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    const response = await fetch(apiEndpoint('/auth/register'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, password }),
+    }).catch(() => {
+      throw new ApiError('Unable to reach the Badminton Planner API.');
+    });
+
+    if (!response.ok) {
+      throw new ApiError(await readApiError(response), response.status);
+    }
+
+    const body = (await response.json()) as LoginResponse;
+
+    if (!body.token || body.tokenType !== 'Bearer' || !body.user) {
+      throw new ApiError('The register response was missing authentication details.');
+    }
+
+    await Promise.all([
+      setStoredAuthValue(tokenStorageKey, body.token),
+      setStoredAuthValue(userStorageKey, JSON.stringify(body.user)),
+    ]);
+
+    setToken(body.token);
+    setUser(body.user);
+  }, []);
+
   const logout = useCallback(async () => {
     await Promise.all([deleteStoredAuthValue(tokenStorageKey), deleteStoredAuthValue(userStorageKey)]);
     setToken(null);
@@ -108,9 +139,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       user,
       login,
+      register,
       logout,
     }),
-    [isLoading, login, logout, token, user],
+    [isLoading, login, register, logout, token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -16,18 +16,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/auth/auth-context';
 import { colors, radii, shadow, spacing } from '@/theme/mobile-theme';
 
-export default function LoginScreen() {
-  const { login } = useAuth();
+export default function RegisterScreen() {
+  const { register } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleLogin() {
+  async function handleRegister() {
+    const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
-    if (!trimmedEmail || !password) {
-      setError('Enter your email and password.');
+    if (!trimmedName || !trimmedEmail || !password) {
+      setError('Enter your name, email, and password.');
       return;
     }
 
@@ -35,10 +37,10 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      await login(trimmedEmail, password);
+      await register(trimmedName, trimmedEmail, password);
       router.replace('/sessions' as never);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Login failed.');
+      setError(caughtError instanceof Error ? caughtError.message : 'Registration failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,47 +52,56 @@ export default function LoginScreen() {
         <View style={styles.hero}>
           <View style={styles.heroCircle} />
           <Text style={styles.eyebrow}>Badminton Planner</Text>
-          <Text style={styles.heroTitle}>Welcome back to the club</Text>
-          <Text style={styles.heroText}>Check sessions, attendance, and events before the next rally.</Text>
+          <Text style={styles.heroTitle}>Join the Club</Text>
+          <Text style={styles.heroText}>Create an account to check sessions, attendance, and events.</Text>
         </View>
         <View style={styles.form}>
-          <Text style={styles.title}>Login</Text>
-        <TextInput
-          autoCapitalize="none"
-          autoComplete="email"
-          editable={!isSubmitting}
-          inputMode="email"
-          onChangeText={setEmail}
-          placeholder="Email"
-          style={styles.input}
-          textContentType="emailAddress"
-          value={email}
-        />
-        <TextInput
-          editable={!isSubmitting}
-          onChangeText={setPassword}
-          placeholder="Password"
-          secureTextEntry
-          style={styles.input}
-          textContentType="password"
-          value={password}
-        />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Text style={styles.title}>Register</Text>
+          <TextInput
+            autoCapitalize="words"
+            editable={!isSubmitting}
+            onChangeText={setName}
+            placeholder="Name"
+            style={styles.input}
+            textContentType="name"
+            value={name}
+          />
+          <TextInput
+            autoCapitalize="none"
+            autoComplete="email"
+            editable={!isSubmitting}
+            inputMode="email"
+            onChangeText={setEmail}
+            placeholder="Email"
+            style={styles.input}
+            textContentType="emailAddress"
+            value={email}
+          />
+          <TextInput
+            editable={!isSubmitting}
+            onChangeText={setPassword}
+            placeholder="Password"
+            secureTextEntry
+            style={styles.input}
+            textContentType="newPassword"
+            value={password}
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
           <Pressable
             accessibilityRole="button"
             disabled={isSubmitting}
-            onPress={handleLogin}
+            onPress={handleRegister}
             style={({ pressed }: PressableStateCallbackType) => [
               styles.button,
               (pressed || isSubmitting) && styles.buttonPressed,
             ]}
           >
-            {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
+            {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Register</Text>}
           </Pressable>
           <View style={styles.linkContainer}>
-            <Text style={styles.linkText}>Don't have an account? </Text>
-            <Link href="/register" style={styles.link}>
-              Register
+            <Text style={styles.linkText}>Already have an account? </Text>
+            <Link href="/login" style={styles.link}>
+              Login
             </Link>
           </View>
         </View>

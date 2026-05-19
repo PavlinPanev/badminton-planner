@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/auth/auth-context';
 
-const publicRoutes = new Set(['/', '/login']);
+const publicRoutes = new Set(['/', '/login', '/register']);
 
 function ProtectedStack() {
   const pathname = usePathname();
@@ -30,6 +30,7 @@ function ProtectedStack() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: 'Home' }} />
       <Stack.Screen name="login" options={{ title: 'Login' }} />
+      <Stack.Screen name="register" options={{ title: 'Register' }} />
       <Stack.Screen name="sessions" options={{ title: 'Sessions' }} />
       <Stack.Screen name="session-details" options={{ title: 'Session Details' }} />
       <Stack.Screen name="events" options={{ title: 'Events' }} />
