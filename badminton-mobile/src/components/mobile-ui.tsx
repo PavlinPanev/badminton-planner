@@ -210,9 +210,11 @@ function BottomNav() {
   const pathname = usePathname();
   const items = [
     { label: 'Home', icon: '⌂', href: '/' },
+    { label: 'Groups', icon: '◌', href: '/groups' },
     { label: 'Sessions', icon: '◷', href: '/sessions' },
     { label: 'Updates', icon: '*', href: '/announcements' },
     { label: 'Events', icon: '◇', href: '/events' },
+    { label: 'Account', icon: '◍', href: '/account' },
   ];
 
   return (

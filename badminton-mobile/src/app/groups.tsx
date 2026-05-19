@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { AnnouncementCard, type AnnouncementListItem } from '@/components/announcement-card';
-import { EmptyState, MessagePanel, ScreenShell, SportHeader } from '@/components/mobile-ui';
 import { useAuth } from '@/auth/auth-context';
+import { GroupCard } from '@/components/group-card';
+import { EmptyState, MessagePanel, ScreenShell, SportHeader } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
-import type { PagedResponse } from 'badminton-shared';
+import type { GroupListItem, PagedResponse } from 'badminton-shared';
 
 const pageSize = 10;
 
-type AnnouncementsResponse = PagedResponse<AnnouncementListItem>;
+type GroupsResponse = PagedResponse<GroupListItem>;
 
-export default function AnnouncementsScreen() {
+export default function GroupsScreen() {
   const { token, logout } = useAuth();
-  const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
+  const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
@@ -23,7 +23,7 @@ export default function AnnouncementsScreen() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAnnouncements = useCallback(
+  const loadGroups = useCallback(
     async (nextPage: number, mode: 'initial' | 'refresh' | 'more' = 'initial') => {
       if (!token) return;
 
@@ -33,7 +33,7 @@ export default function AnnouncementsScreen() {
       setError(null);
 
       try {
-        const response = await fetch(apiEndpoint(`/announcements?page=${nextPage}&pageSize=${pageSize}`), {
+        const response = await fetch(apiEndpoint(`/groups?page=${nextPage}&pageSize=${pageSize}`), {
           headers: { Authorization: `Bearer ${token}` },
         }).catch(() => {
           throw new ApiError('Unable to reach the Badminton Planner API.');
@@ -45,13 +45,13 @@ export default function AnnouncementsScreen() {
           throw new ApiError(message, response.status);
         }
 
-        const body = (await response.json()) as AnnouncementsResponse;
-        setAnnouncements((current) => (nextPage === 1 ? body.data : [...current, ...body.data]));
+        const body = (await response.json()) as GroupsResponse;
+        setGroups((current) => (nextPage === 1 ? body.data : [...current, ...body.data]));
         setPage(body.paging.page);
         setHasMore(body.paging.hasMore);
         setTotal(body.paging.total);
       } catch (caughtError) {
-        setError(caughtError instanceof Error ? caughtError.message : 'Unable to load announcements.');
+        setError(caughtError instanceof Error ? caughtError.message : 'Unable to load groups.');
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
@@ -62,13 +62,13 @@ export default function AnnouncementsScreen() {
   );
 
   useEffect(() => {
-    loadAnnouncements(1);
-  }, [loadAnnouncements]);
+    loadGroups(1);
+  }, [loadGroups]);
 
   const handleLoadMore = useCallback(() => {
     if (!hasMore || isLoading || isRefreshing || isLoadingMore) return;
-    loadAnnouncements(page + 1, 'more');
-  }, [hasMore, isLoading, isLoadingMore, isRefreshing, loadAnnouncements, page]);
+    loadGroups(page + 1, 'more');
+  }, [hasMore, isLoading, isLoadingMore, isRefreshing, loadGroups, page]);
 
   if (isLoading) {
     return (
@@ -83,32 +83,26 @@ export default function AnnouncementsScreen() {
   return (
     <ScreenShell padded={false}>
       <FlatList
-        contentContainerStyle={announcements.length ? styles.listContent : styles.emptyContent}
-        data={announcements}
+        contentContainerStyle={groups.length ? styles.listContent : styles.emptyContent}
+        data={groups}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <AnnouncementCard announcement={item} />}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={() => loadAnnouncements(1, 'refresh')} />
-        }
+        renderItem={({ item }) => <GroupCard group={item} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadGroups(1, 'refresh')} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.35}
         ListHeaderComponent={
           <View style={styles.headerWrap}>
             <SportHeader
-              eyebrow="Club updates"
-              title="Announcements"
-              subtitle={
-                total === 1
-                  ? '1 announcement from your groups.'
-                  : `${total} announcements from your training groups.`
-              }
+              eyebrow="Club roster"
+              title="My Groups"
+              subtitle={total === 1 ? '1 group in your club circle.' : `${total} groups in your club circle.`}
             />
             {error ? (
               <MessagePanel
                 message={error}
                 tone="rose"
                 action={
-                  <Pressable onPress={() => loadAnnouncements(1)}>
+                  <Pressable onPress={() => loadGroups(1)}>
                     <Text style={styles.retryText}>Retry</Text>
                   </Pressable>
                 }
@@ -118,8 +112,8 @@ export default function AnnouncementsScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            title="No announcements yet"
-            message="Group announcements will appear here when coaches or managers share updates."
+            title="No group memberships yet"
+            message="When your account joins a training group, it will appear here with stats and venue details."
           />
         }
         ListFooterComponent={

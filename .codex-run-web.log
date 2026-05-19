@@ -120,3 +120,41 @@
  GET /profile 200 in 149ms (next.js: 9ms, proxy.ts: 20ms, application-code: 121ms)
 ○ Compiling /admin ...
  GET /admin 200 in 7.5s (next.js: 5.8s, proxy.ts: 24ms, application-code: 1674ms)
+ GET /admin 200 in 778ms (next.js: 234ms, proxy.ts: 16ms, application-code: 529ms)
+○ Compiling /api/sessions ...
+ GET /api/sessions?page=1&pageSize=10 200 in 6.4s (next.js: 5.1s, proxy.ts: 21ms, application-code: 1232ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 1768ms (next.js: 14ms, proxy.ts: 26ms, application-code: 1728ms)
+○ Compiling /api/events ...
+ GET /api/events?page=1&pageSize=50 200 in 3.7s (next.js: 3.4s, proxy.ts: 37ms, application-code: 246ms)
+ GET /admin 200 in 1620ms (next.js: 241ms, proxy.ts: 79ms, application-code: 1300ms)
+ GET /admin 200 in 789ms (next.js: 282ms, proxy.ts: 15ms, application-code: 491ms)
+ GET /admin 200 in 984ms (next.js: 5ms, proxy.ts: 81ms, application-code: 897ms)
+ GET /admin 200 in 843ms (next.js: 176ms, proxy.ts: 23ms, application-code: 643ms)
+○ Compiling /api/sessions ...
+ GET /api/sessions?page=1&pageSize=50 200 in 6.4s (next.js: 3.7s, proxy.ts: 15ms, application-code: 2.7s)
+○ Compiling /api/events ...
+ GET /api/events?page=1&pageSize=50 200 in 7.7s (next.js: 3.7s, proxy.ts: 3.7s, application-code: 207ms)
+ GET /api/events?page=1&pageSize=50 200 in 296ms (next.js: 6ms, proxy.ts: 12ms, application-code: 277ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 1885ms (next.js: 30ms, proxy.ts: 23ms, application-code: 1833ms)
+ GET /api/events?page=1&pageSize=50 200 in 329ms (next.js: 20ms, proxy.ts: 44ms, application-code: 265ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 1886ms (next.js: 18ms, proxy.ts: 20ms, application-code: 1848ms)
+ GET /api/events?page=1&pageSize=50 200 in 320ms (next.js: 30ms, proxy.ts: 14ms, application-code: 276ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 2.3s (next.js: 11ms, proxy.ts: 14ms, application-code: 2.2s)
+ GET /api/sessions?page=1&pageSize=10 200 in 1759ms (next.js: 11ms, proxy.ts: 42ms, application-code: 1706ms)
+○ Compiling /api/groups ...
+ GET /api/groups?page=1&pageSize=10 200 in 11.6s (next.js: 9.9s, proxy.ts: 44ms, application-code: 1674ms)
+○ Compiling /dashboard ...
+○ Compiling /api/events ...
+ GET /api/sessions?page=1&pageSize=50 200 in 3.7s (next.js: 26ms, proxy.ts: 94ms, application-code: 3.5s)
+ GET /dashboard 200 in 15.0s (next.js: 8.4s, proxy.ts: 856ms, application-code: 5.7s)
+ GET /api/events?page=1&pageSize=50 200 in 7.3s (next.js: 6.9s, proxy.ts: 94ms, application-code: 337ms)
+ GET /api/groups?page=1&pageSize=10 200 in 337ms (next.js: 27ms, proxy.ts: 14ms, application-code: 296ms)
+ GET /api/sessions?page=1&pageSize=10 200 in 1073ms (next.js: 21ms, proxy.ts: 13ms, application-code: 1040ms)
+○ Compiling /api/announcements ...
+ GET /api/announcements?page=1&pageSize=10 200 in 4.2s (next.js: 3.9s, proxy.ts: 17ms, application-code: 296ms)
+ GET /api/events?page=1&pageSize=10 200 in 1879ms (next.js: 1419ms, proxy.ts: 11ms, application-code: 450ms)
+ GET /api/events?page=1&pageSize=50 200 in 324ms (next.js: 36ms, proxy.ts: 20ms, application-code: 268ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 1914ms (next.js: 20ms, proxy.ts: 20ms, application-code: 1874ms)
+ GET /api/events?page=1&pageSize=10 200 in 593ms (next.js: 9ms, proxy.ts: 14ms, application-code: 569ms)
+○ Compiling /groups ...
+ GET /groups 200 in 5.3s (next.js: 4.6s, proxy.ts: 14ms, application-code: 680ms)

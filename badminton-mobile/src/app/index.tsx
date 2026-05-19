@@ -8,20 +8,11 @@ import type { SessionListItem } from '@/components/session-card';
 import type { EventListItem } from '@/components/event-card';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { PagedResponse } from 'badminton-shared';
 
-type SessionsResponse = {
-  data: SessionListItem[];
-  paging: {
-    total: number;
-  };
-};
+type SessionsResponse = PagedResponse<SessionListItem>;
 
-type EventsResponse = {
-  data: EventListItem[];
-  paging: {
-    total: number;
-  };
-};
+type EventsResponse = PagedResponse<EventListItem>;
 
 type DashboardStats = {
   sessionsTotal: number;

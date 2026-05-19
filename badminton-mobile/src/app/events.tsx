@@ -6,18 +6,11 @@ import { EmptyState, MessagePanel, ScreenShell, SportHeader } from '@/components
 import { useAuth } from '@/auth/auth-context';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { PagedResponse } from 'badminton-shared';
 
 const pageSize = 10;
 
-type EventsResponse = {
-  data: EventListItem[];
-  paging: {
-    page: number;
-    pageSize: number;
-    total: number;
-    hasMore: boolean;
-  };
-};
+type EventsResponse = PagedResponse<EventListItem>;
 
 export default function EventsScreen() {
   const { token, logout } = useAuth();

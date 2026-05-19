@@ -6,18 +6,11 @@ import { SessionCard, type SessionListItem } from '@/components/session-card';
 import { useAuth } from '@/auth/auth-context';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { PagedResponse } from 'badminton-shared';
 
 const pageSize = 10;
 
-type SessionsResponse = {
-  data: SessionListItem[];
-  paging: {
-    page: number;
-    pageSize: number;
-    total: number;
-    hasMore: boolean;
-  };
-};
+type SessionsResponse = PagedResponse<SessionListItem>;
 
 export default function SessionsScreen() {
   const { token, logout } = useAuth();
