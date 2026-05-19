@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { getApiUser, jsonError } from "@/auth/api";
-import { getSessionDetailForUser } from "@/lib/session-data";
+import { canManageSession, getSessionDetailForUser } from "@/lib/session-data";
 
 export async function GET(
   request: NextRequest,
@@ -31,6 +31,7 @@ export async function GET(
   }
 
   const session = result.session;
+  const canManageComments = await canManageSession(session.id, auth.user);
 
   return Response.json({
     data: {
@@ -57,9 +58,11 @@ export async function GET(
       })),
       comments: session.comments.map((comment) => ({
         id: comment.id,
+        userId: comment.userId,
         text: comment.text,
         authorName: comment.authorName,
         commentedAt: comment.commentedAt,
+        canEdit: comment.userId === auth.user.id || canManageComments,
       })),
     },
   });

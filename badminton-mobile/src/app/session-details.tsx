@@ -33,9 +33,11 @@ type SessionAttendance = {
 
 type SessionComment = {
   id: number;
+  userId: number;
   text: string;
   authorName: string;
   commentedAt: string;
+  canEdit: boolean;
 };
 
 type SessionDetail = {
@@ -145,6 +147,10 @@ export default function SessionDetailsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [savingPlayerId, setSavingPlayerId] = useState<number | null>(null);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editCommentDraft, setEditCommentDraft] = useState('');
+  const [savingCommentId, setSavingCommentId] = useState<number | 'new' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -263,6 +269,99 @@ export default function SessionDetailsScreen() {
       }
     },
     [loadSession, logout, notes, session, token],
+  );
+
+  const addComment = useCallback(async () => {
+    if (!token || !session || !commentDraft.trim()) {
+      return;
+    }
+
+    setSavingCommentId('new');
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch(apiEndpoint(`/sessions/${session.id}/comments`), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: commentDraft }),
+      }).catch(() => {
+        throw new ApiError('Unable to reach the Badminton Planner API.');
+      });
+
+      if (!response.ok) {
+        const message = await readApiError(response);
+
+        if (response.status === 401) {
+          await logout();
+        }
+
+        throw new ApiError(message, response.status);
+      }
+
+      setCommentDraft('');
+      setSuccessMessage('Comment added.');
+      await loadSession('refresh');
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Unable to add comment.');
+    } finally {
+      setSavingCommentId(null);
+    }
+  }, [commentDraft, loadSession, logout, session, token]);
+
+  const startEditComment = useCallback((comment: SessionComment) => {
+    setEditingCommentId(comment.id);
+    setEditCommentDraft(comment.text);
+    setError(null);
+    setSuccessMessage(null);
+  }, []);
+
+  const updateComment = useCallback(
+    async (commentId: number) => {
+      if (!token || !session || !editCommentDraft.trim()) {
+        return;
+      }
+
+      setSavingCommentId(commentId);
+      setError(null);
+      setSuccessMessage(null);
+
+      try {
+        const response = await fetch(apiEndpoint(`/sessions/${session.id}/comments/${commentId}`), {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: editCommentDraft }),
+        }).catch(() => {
+          throw new ApiError('Unable to reach the Badminton Planner API.');
+        });
+
+        if (!response.ok) {
+          const message = await readApiError(response);
+
+          if (response.status === 401) {
+            await logout();
+          }
+
+          throw new ApiError(message, response.status);
+        }
+
+        setEditingCommentId(null);
+        setEditCommentDraft('');
+        setSuccessMessage('Comment updated.');
+        await loadSession('refresh');
+      } catch (caughtError) {
+        setError(caughtError instanceof Error ? caughtError.message : 'Unable to update comment.');
+      } finally {
+        setSavingCommentId(null);
+      }
+    },
+    [editCommentDraft, loadSession, logout, session, token],
   );
 
   if (isLoading) {
@@ -405,15 +504,82 @@ export default function SessionDetailsScreen() {
 
       <MobileCard style={styles.section}>
         <Text style={styles.sectionTitle}>Comments and Coach Notes</Text>
+        <View style={styles.commentForm}>
+          <TextInput
+            editable={savingCommentId !== 'new'}
+            multiline
+            onChangeText={setCommentDraft}
+            placeholder="Add a comment or coach note"
+            style={styles.commentInput}
+            value={commentDraft}
+          />
+          <Pressable
+            disabled={savingCommentId === 'new' || !commentDraft.trim()}
+            onPress={addComment}
+            style={[
+              styles.commentButton,
+              (savingCommentId === 'new' || !commentDraft.trim()) && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.commentButtonText}>{savingCommentId === 'new' ? 'Posting...' : 'Post comment'}</Text>
+          </Pressable>
+        </View>
         {session.comments.length ? (
           <View style={styles.commentList}>
             {session.comments.map((comment) => (
               <View key={comment.id} style={styles.commentCard}>
                 <View style={styles.commentHeader}>
-                  <Text style={styles.commentAuthor}>{comment.authorName}</Text>
-                  <Text style={styles.commentDate}>{formatCommentDate(comment.commentedAt)}</Text>
+                  <View style={styles.commentTitleBlock}>
+                    <Text style={styles.commentAuthor}>{comment.authorName}</Text>
+                    <Text style={styles.commentDate}>{formatCommentDate(comment.commentedAt)}</Text>
+                  </View>
+                  {comment.canEdit ? (
+                    <Pressable
+                      disabled={savingCommentId === comment.id}
+                      onPress={() => startEditComment(comment)}
+                      style={styles.editCommentButton}
+                    >
+                      <Text style={styles.editCommentButtonText}>Edit</Text>
+                    </Pressable>
+                  ) : null}
                 </View>
-                <Text style={styles.commentText}>{comment.text}</Text>
+                {editingCommentId === comment.id ? (
+                  <View style={styles.editCommentForm}>
+                    <TextInput
+                      editable={savingCommentId !== comment.id}
+                      multiline
+                      onChangeText={setEditCommentDraft}
+                      style={styles.commentInput}
+                      value={editCommentDraft}
+                    />
+                    <View style={styles.editCommentActions}>
+                      <Pressable
+                        disabled={savingCommentId === comment.id}
+                        onPress={() => {
+                          setEditingCommentId(null);
+                          setEditCommentDraft('');
+                        }}
+                        style={styles.cancelCommentButton}
+                      >
+                        <Text style={styles.cancelCommentButtonText}>Cancel</Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={savingCommentId === comment.id || !editCommentDraft.trim()}
+                        onPress={() => updateComment(comment.id)}
+                        style={[
+                          styles.commentButton,
+                          (savingCommentId === comment.id || !editCommentDraft.trim()) && styles.disabledButton,
+                        ]}
+                      >
+                        <Text style={styles.commentButtonText}>
+                          {savingCommentId === comment.id ? 'Saving...' : 'Save'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.commentText}>{comment.text}</Text>
+                )}
               </View>
             ))}
           </View>
@@ -639,6 +805,33 @@ const styles = StyleSheet.create({
   commentList: {
     gap: 10,
   },
+  commentForm: {
+    gap: 10,
+  },
+  commentInput: {
+    minHeight: 84,
+    borderColor: '#d4d4d8',
+    borderRadius: 8,
+    borderWidth: 1,
+    color: '#18181b',
+    fontSize: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    textAlignVertical: 'top',
+  },
+  commentButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    backgroundColor: '#059669',
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  commentButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
   commentCard: {
     borderColor: '#e4e4e7',
     borderRadius: 8,
@@ -647,6 +840,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   commentHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  commentTitleBlock: {
+    flex: 1,
     gap: 2,
   },
   commentAuthor: {
@@ -662,6 +862,40 @@ const styles = StyleSheet.create({
     color: '#3f3f46',
     fontSize: 14,
     lineHeight: 20,
+  },
+  editCommentButton: {
+    borderColor: '#bae6fd',
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  editCommentButtonText: {
+    color: '#0369a1',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  editCommentForm: {
+    gap: 10,
+  },
+  editCommentActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  cancelCommentButton: {
+    alignItems: 'center',
+    borderColor: '#d4d4d8',
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  cancelCommentButtonText: {
+    color: '#3f3f46',
+    fontSize: 14,
+    fontWeight: '800',
   },
   emptyText: {
     color: '#71717a',
