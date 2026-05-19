@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, UserPlus, UsersRound } from "lucide-react";
+import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 
 import { logoutAction } from "@/auth/actions";
 import { getCurrentUser } from "@/auth/session";
@@ -82,6 +82,12 @@ export async function SiteHeader() {
                 <UsersRound aria-hidden="true" className="h-4 w-4" />
                 Groups
               </NavLink>
+              {user.role === "admin" ? (
+                <NavLink href="/admin/users">
+                  <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                  Admin
+                </NavLink>
+              ) : null}
             </>
           ) : null}
           {publicNavItems.map((item) => (
@@ -108,6 +114,12 @@ export async function SiteHeader() {
                   <UsersRound aria-hidden="true" className="h-4 w-4" />
                   Groups
                 </NavLink>
+                {user.role === "admin" ? (
+                  <NavLink href="/admin/users" compact>
+                    <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                    Admin
+                  </NavLink>
+                ) : null}
               </>
             ) : null}
             {publicNavItems.map((item) => (
