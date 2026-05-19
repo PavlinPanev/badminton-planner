@@ -2,6 +2,7 @@ import { and, asc, count, eq, isNull } from "drizzle-orm";
 
 import type { AuthUser } from "@/auth/token";
 import { db, events, groups, sessions, venues } from "@/db";
+import { canManageVenues } from "./permissions";
 
 export type VenueCardData = {
   id: number;
@@ -23,9 +24,7 @@ export type VenueFormData = {
   description: string | null;
 };
 
-export function canManageVenues(user: AuthUser) {
-  return user.role === "manager" || user.role === "admin";
-}
+export { canManageVenues };
 
 async function getVenueUsage(venueId: number) {
   const [[{ total: groupsCount }], [{ total: sessionsCount }], [{ total: eventsCount }]] = await Promise.all([

@@ -4,6 +4,7 @@ import { asc, count, desc, eq } from "drizzle-orm";
 
 import type { AuthUser } from "@/auth/token";
 import { db, users } from "@/db";
+import { canManageUsers } from "./permissions";
 
 export type UserRole = "admin" | "manager" | "coach" | "parent";
 
@@ -35,9 +36,7 @@ function normalizePageSize(value: number | undefined) {
   return Math.min(Math.max(Number(value) || 20, 1), 50);
 }
 
-export function canManageUsers(user: AuthUser | null) {
-  return user?.role === "admin";
-}
+export { canManageUsers };
 
 export function isUserRole(value: FormDataEntryValue | null): value is UserRole {
   return typeof value === "string" && userRoles.includes(value as UserRole);

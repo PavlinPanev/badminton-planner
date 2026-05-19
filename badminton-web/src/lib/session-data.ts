@@ -12,6 +12,7 @@ import {
   venues,
 } from "@/db";
 import type { AuthUser } from "@/auth/token";
+import { canManageSessionByAssignment } from "./permissions";
 import {
   AttendanceStatus,
   getCapacityState,
@@ -431,17 +432,13 @@ export async function canManageSession(sessionId: number, user: AuthUser) {
     return false;
   }
 
-  if (session.coachUserId === user.id) {
-    return true;
-  }
-
   const [membership] = await db
     .select({ role: groupMembers.role })
     .from(groupMembers)
     .where(and(eq(groupMembers.groupId, session.groupId), eq(groupMembers.userId, user.id)))
     .limit(1);
 
-  return membership?.role === "coach" || membership?.role === "manager";
+  return canManageSessionByAssignment(user, session, membership?.role);
 }
 
 export const canCancelSession = canManageSession;

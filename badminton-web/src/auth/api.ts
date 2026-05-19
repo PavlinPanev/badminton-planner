@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 import { db, users } from "@/db";
 import { parsePaginationParams } from "@/lib/api-validation";
+import { paginationMeta } from "@/lib/pagination";
 import { verifySessionToken } from "./token";
 
 export type ApiAuthResult =
@@ -59,18 +60,4 @@ export async function getApiUser(request: NextRequest): Promise<ApiAuthResult> {
 export function parsePage(request: NextRequest) {
   return parsePaginationParams(request.nextUrl.searchParams);
 }
-
-export function paginationMeta(page: number, pageSize: number, totalCount: number) {
-  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
-
-  return {
-    page,
-    pageSize,
-    total: totalCount,
-    totalCount,
-    totalPages,
-    hasMore: page < totalPages,
-    hasNextPage: page < totalPages,
-    hasPreviousPage: page > 1,
-  };
-}
+export { paginationMeta };

@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 import type { AuthUser } from "@/auth/token";
 import { db, groupAnnouncements, groupMembers, groups, players, sessions, users, venues } from "@/db";
+import { canCreateGroups as canCreateGroupsByRole, canManageGroupContent } from "./permissions";
 import { getSessionState } from "./session-status";
 
 export type UserGroupCardData = {
@@ -396,7 +397,7 @@ export async function canManageGroupSessions(groupId: number, user: AuthUser) {
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
     .limit(1);
 
-  return membership?.role === "manager" || membership?.role === "coach";
+  return canManageGroupContent(user.role, membership?.role);
 }
 
 export async function canManageGroupAnnouncements(groupId: number, user: AuthUser) {
@@ -410,7 +411,7 @@ export async function canManageGroupAnnouncements(groupId: number, user: AuthUse
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
     .limit(1);
 
-  return membership?.role === "manager" || membership?.role === "coach";
+  return canManageGroupContent(user.role, membership?.role);
 }
 
 export async function canViewGroup(groupId: number, user: AuthUser) {
@@ -419,7 +420,7 @@ export async function canViewGroup(groupId: number, user: AuthUser) {
 }
 
 export function canCreateGroups(user: AuthUser) {
-  return user.role === "manager" || user.role === "admin";
+  return canCreateGroupsByRole(user);
 }
 
 export async function getVenueOptions(): Promise<VenueOption[]> {
