@@ -88,7 +88,7 @@ export default function LoginScreen() {
             {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
           </Pressable>
           <View style={styles.linkContainer}>
-            <Text style={styles.linkText}>Don't have an account? </Text>
+            <Text style={styles.linkText}>Don&apos;t have an account? </Text>
             <Link href="/register" style={styles.link}>
               Register
             </Link>

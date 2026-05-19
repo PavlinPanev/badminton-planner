@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
 import { EmptyState, SectionHeader } from "@/components/ui/surfaces";
-import { canCreateGroups, getGroupAgeLabel, getGroupsForUser, type UserGroupCardData } from "@/lib/group-data";
+import { canCreateGroups, getGroupAgeLabel, getGroupsPageForUser, type UserGroupCardData } from "@/lib/group-data";
 
 function GroupCard({ group }: { group: UserGroupCardData }) {
   return (
@@ -85,14 +85,60 @@ function GroupCard({ group }: { group: UserGroupCardData }) {
   );
 }
 
-export default async function GroupsPage() {
+type GroupsSearchParams = {
+  page?: string | string[];
+};
+
+function parsePositivePage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return Math.max(Number(raw ?? "1") || 1, 1);
+}
+
+function PaginationControls({ page, totalPages, total }: { page: number; totalPages: number; total: number }) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav className="mt-6 flex flex-col gap-3 rounded-3xl bg-white p-4 text-sm font-bold text-zinc-700 shadow-sm ring-1 ring-zinc-950/5 sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        Page {page} of {totalPages}
+        <span className="font-semibold text-zinc-500"> · {total} total</span>
+      </p>
+      <div className="flex gap-2">
+        {page > 1 ? (
+          <Link href={`/groups?page=${page - 1}`} className="rounded-full border border-zinc-200 px-4 py-2 text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50">
+            Previous
+          </Link>
+        ) : (
+          <span className="rounded-full border border-zinc-100 px-4 py-2 text-zinc-300">Previous</span>
+        )}
+        {page < totalPages ? (
+          <Link href={`/groups?page=${page + 1}`} className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800">
+            Next
+          </Link>
+        ) : (
+          <span className="rounded-full bg-zinc-100 px-4 py-2 text-zinc-300">Next</span>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+export default async function GroupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<GroupsSearchParams>;
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login?next=/groups");
   }
 
-  const groups = await getGroupsForUser(user);
+  const resolvedSearchParams = await searchParams;
+  const page = parsePositivePage(resolvedSearchParams.page);
+  const { groups, paging } = await getGroupsPageForUser(user, { page, pageSize: 12 });
   const canCreate = canCreateGroups(user);
 
   return (
@@ -114,7 +160,7 @@ export default async function GroupsPage() {
           <div className="rounded-3xl bg-white/15 p-5 ring-1 ring-white/30 backdrop-blur">
             <UsersRound aria-hidden="true" className="h-16 w-16 text-lime-100" />
             <p className="mt-3 text-sm font-black uppercase tracking-[0.16em] text-white/90">
-              {groups.length} groups
+              {paging.total} groups
             </p>
           </div>
         </div>
@@ -151,6 +197,7 @@ export default async function GroupsPage() {
             />
           </div>
         )}
+        <PaginationControls page={paging.page} totalPages={paging.totalPages} total={paging.total} />
       </section>
 
       <section className="mt-10 rounded-3xl bg-white/80 p-5 text-sm font-bold text-zinc-700 shadow-sm ring-1 ring-zinc-950/5">

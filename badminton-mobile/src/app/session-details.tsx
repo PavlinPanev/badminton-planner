@@ -695,6 +695,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
   },
+  microcopy: {
+    color: '#71717a',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
   attendanceForm: {
     borderColor: '#e4e4e7',
     borderRadius: 8,

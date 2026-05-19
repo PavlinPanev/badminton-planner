@@ -137,5 +137,6 @@ For database configuration, migrations, seeding, and mobile networking setup, fo
 
 - [Architecture](docs/architecture.md)
 - [Database Schema](docs/database-schema.md)
+- [Performance Test](docs/performance-test.md)
 - [Repository Structure](docs/repo-structure.md)
 - [Setup Guide](docs/setup-guide.md)

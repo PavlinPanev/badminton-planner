@@ -69,10 +69,60 @@ function EventCard({ event, canManage }: { event: EventCardData; canManage: bool
   );
 }
 
-export default async function EventsPage() {
+type EventsSearchParams = {
+  page?: string | string[];
+};
+
+function parsePositivePage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return Math.max(Number(raw ?? "1") || 1, 1);
+}
+
+function PaginationControls({ page, totalPages, total }: { page: number; totalPages: number; total: number }) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav className="mt-6 flex flex-col gap-3 rounded-3xl bg-white p-4 text-sm font-bold text-zinc-700 shadow-sm ring-1 ring-zinc-950/5 sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        Page {page} of {totalPages}
+        <span className="font-semibold text-zinc-500"> · {total} total</span>
+      </p>
+      <div className="flex gap-2">
+        {page > 1 ? (
+          <Link href={`/events?page=${page - 1}`} className="rounded-full border border-zinc-200 px-4 py-2 text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50">
+            Previous
+          </Link>
+        ) : (
+          <span className="rounded-full border border-zinc-100 px-4 py-2 text-zinc-300">Previous</span>
+        )}
+        {page < totalPages ? (
+          <Link href={`/events?page=${page + 1}`} className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800">
+            Next
+          </Link>
+        ) : (
+          <span className="rounded-full bg-zinc-100 px-4 py-2 text-zinc-300">Next</span>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams: Promise<EventsSearchParams>;
+}) {
   const user = await getCurrentUser();
   const canManage = user ? canManageEvents(user) : false;
-  const eventRows = await getEventsForList(canManage);
+  const resolvedSearchParams = await searchParams;
+  const page = parsePositivePage(resolvedSearchParams.page);
+  const { events: eventRows, paging } = await getEventsForList({
+    includeCanceledAndPast: canManage,
+    page,
+    pageSize: 12,
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -116,6 +166,7 @@ export default async function EventsPage() {
             <p className="mt-2 text-sm text-zinc-600">There are no public upcoming events yet.</p>
           </Card>
         ) : null}
+        <PaginationControls page={paging.page} totalPages={paging.totalPages} total={paging.total} />
       </section>
     </div>
   );

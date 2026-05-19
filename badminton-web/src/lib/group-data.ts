@@ -21,6 +21,16 @@ export type UserGroupCardData = {
   canManage: boolean;
 };
 
+export type UserGroupListResult = {
+  groups: UserGroupCardData[];
+  paging: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export type GroupDetailData = UserGroupCardData & {
   venueAddress: string;
   venueDescription: string | null;
@@ -273,6 +283,79 @@ export async function getGroupsForUser(user: AuthUser): Promise<UserGroupCardDat
     roles: Array.from(rolesByGroup.get(row.id) ?? []),
     canManage: rolesByGroup.get(row.id)?.has("manager") ?? false,
   }));
+}
+
+function normalizePage(value: number | undefined) {
+  return Math.max(Number(value) || 1, 1);
+}
+
+function normalizePageSize(value: number | undefined) {
+  return Math.min(Math.max(Number(value) || 12, 1), 48);
+}
+
+export async function getGroupsPageForUser(
+  user: AuthUser,
+  options?: { page?: number; pageSize?: number },
+): Promise<UserGroupListResult> {
+  const memberships = await getUserGroupMemberships(user);
+  const groupIds = Array.from(new Set(memberships.map((membership) => membership.groupId)));
+  const page = normalizePage(options?.page);
+  const pageSize = normalizePageSize(options?.pageSize);
+  const offset = (page - 1) * pageSize;
+
+  if (!groupIds.length) {
+    return {
+      groups: [],
+      paging: {
+        page,
+        pageSize,
+        total: 0,
+        totalPages: 1,
+      },
+    };
+  }
+
+  const rows = await db
+    .select({
+      id: groups.id,
+      title: groups.title,
+      description: groups.description,
+      level: groups.level,
+      minAge: groups.minAge,
+      maxAge: groups.maxAge,
+      venueName: venues.name,
+      venueCity: venues.city,
+    })
+    .from(groups)
+    .innerJoin(venues, eq(groups.venueId, venues.id))
+    .where(inArray(groups.id, groupIds))
+    .orderBy(asc(groups.title))
+    .limit(pageSize)
+    .offset(offset);
+
+  const stats = new Map(await Promise.all(rows.map(async (row) => [row.id, await getGroupStats(row.id)] as const)));
+  const rolesByGroup = new Map<number, Set<string>>();
+
+  for (const membership of memberships) {
+    const roles = rolesByGroup.get(membership.groupId) ?? new Set<string>();
+    roles.add(membership.role);
+    rolesByGroup.set(membership.groupId, roles);
+  }
+
+  return {
+    groups: rows.map((row) => ({
+      ...row,
+      ...(stats.get(row.id) ?? { memberCount: 0, playerCount: 0, sessionCount: 0 }),
+      roles: Array.from(rolesByGroup.get(row.id) ?? []),
+      canManage: rolesByGroup.get(row.id)?.has("manager") ?? false,
+    })),
+    paging: {
+      page,
+      pageSize,
+      total: groupIds.length,
+      totalPages: Math.max(Math.ceil(groupIds.length / pageSize), 1),
+    },
+  };
 }
 
 export async function canManageGroup(groupId: number, user: AuthUser) {

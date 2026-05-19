@@ -4,8 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/auth/session";
 import { SectionHeader } from "@/components/ui/surfaces";
 import { getAnnouncementFormContextForUser, getEditableAnnouncementForUser } from "@/lib/group-data";
-import { updateAnnouncementAction } from "../../../../../announcement-actions";
-import { AnnouncementForm } from "../../../../../announcement-form";
+import { updateAnnouncementAction } from "../../../../announcement-actions";
+import { AnnouncementForm } from "../../../../announcement-form";
 
 export default async function EditGroupAnnouncementPage({
   params,

@@ -201,8 +201,11 @@ export const sessions = pgTable(
   (table) => [
     index("sessions_group_id_idx").on(table.groupId),
     index("sessions_session_date_idx").on(table.sessionDate),
+    index("sessions_group_date_time_idx").on(table.groupId, table.sessionDate, table.startTime),
     index("sessions_venue_id_idx").on(table.venueId),
+    index("sessions_venue_date_idx").on(table.venueId, table.sessionDate),
     index("sessions_coach_user_id_idx").on(table.coachUserId),
+    index("sessions_coach_date_idx").on(table.coachUserId, table.sessionDate),
     check("sessions_capacity_positive", sql`${table.capacity} is null or ${table.capacity} > 0`),
   ],
 );
@@ -224,6 +227,8 @@ export const sessionAttendance = pgTable(
   },
   (table) => [
     uniqueIndex("session_attendance_session_player_idx").on(table.sessionId, table.playerId),
+    index("session_attendance_session_id_idx").on(table.sessionId),
+    index("session_attendance_player_id_idx").on(table.playerId),
     index("session_attendance_parent_user_id_idx").on(table.parentUserId),
   ],
 );
@@ -243,6 +248,7 @@ export const sessionComments = pgTable(
   },
   (table) => [
     index("session_comments_session_id_idx").on(table.sessionId),
+    index("session_comments_session_time_idx").on(table.sessionId, table.commentedAt),
     index("session_comments_user_id_idx").on(table.userId),
   ],
 );

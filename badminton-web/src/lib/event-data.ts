@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNull } from "drizzle-orm";
 
 import type { AuthUser } from "@/auth/token";
 import { db, eventRegistrations, events, venues } from "@/db";
@@ -15,6 +15,22 @@ export type EventCardData = {
   venueAddress: string;
   venueCity: string;
   registrationsCount: number;
+};
+
+export type EventListOptions = {
+  page?: number;
+  pageSize?: number;
+  includeCanceledAndPast?: boolean;
+};
+
+export type EventListResult = {
+  events: EventCardData[];
+  paging: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 };
 
 export type EventFormData = {
@@ -60,7 +76,38 @@ async function getRegistrationCount(eventId: number) {
   return total;
 }
 
-export async function getEventsForList(includeCanceledAndPast = false): Promise<EventCardData[]> {
+function normalizePage(value: number | undefined) {
+  return Math.max(Number(value) || 1, 1);
+}
+
+function normalizePageSize(value: number | undefined) {
+  return Math.min(Math.max(Number(value) || 12, 1), 48);
+}
+
+async function getRegistrationCounts(eventIds: number[]) {
+  if (!eventIds.length) {
+    return new Map<number, number>();
+  }
+
+  const rows = await db
+    .select({
+      eventId: eventRegistrations.eventId,
+      total: count(),
+    })
+    .from(eventRegistrations)
+    .where(inArray(eventRegistrations.eventId, eventIds))
+    .groupBy(eventRegistrations.eventId);
+
+  return new Map(rows.map((row) => [row.eventId, row.total]));
+}
+
+export async function getEventsForList(options: EventListOptions = {}): Promise<EventListResult> {
+  const includeCanceledAndPast = options.includeCanceledAndPast ?? false;
+  const page = normalizePage(options.page);
+  const pageSize = normalizePageSize(options.pageSize);
+  const offset = (page - 1) * pageSize;
+  const where = includeCanceledAndPast ? undefined : and(gte(events.eventDate, new Date()), eq(events.canceled, false));
+  const [{ total: totalCount }] = await db.select({ total: count() }).from(events).where(where);
   const rows = await db
     .select({
       id: events.id,
@@ -76,15 +123,25 @@ export async function getEventsForList(includeCanceledAndPast = false): Promise<
     })
     .from(events)
     .innerJoin(venues, eq(events.venueId, venues.id))
-    .where(includeCanceledAndPast ? undefined : and(gte(events.eventDate, new Date()), eq(events.canceled, false)))
-    .orderBy(includeCanceledAndPast ? desc(events.eventDate) : asc(events.eventDate));
+    .where(where)
+    .orderBy(includeCanceledAndPast ? desc(events.eventDate) : asc(events.eventDate), asc(events.id))
+    .limit(pageSize)
+    .offset(offset);
 
-  const counts = new Map(await Promise.all(rows.map(async (event) => [event.id, await getRegistrationCount(event.id)] as const)));
+  const counts = await getRegistrationCounts(rows.map((event) => event.id));
 
-  return rows.map((event) => ({
-    ...event,
-    registrationsCount: counts.get(event.id) ?? 0,
-  }));
+  return {
+    events: rows.map((event) => ({
+      ...event,
+      registrationsCount: counts.get(event.id) ?? 0,
+    })),
+    paging: {
+      page,
+      pageSize,
+      total: totalCount,
+      totalPages: Math.max(Math.ceil(totalCount / pageSize), 1),
+    },
+  };
 }
 
 export async function getEventDetail(eventId: number) {

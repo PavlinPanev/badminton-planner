@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { getApiUser, parsePage } from "@/auth/api";
+import { getApiUser, paginationMeta, parsePage } from "@/auth/api";
 import { getDashboardSessions } from "@/lib/session-data";
 import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
 
@@ -11,12 +11,21 @@ export async function GET(request: NextRequest) {
     return auth.error;
   }
 
-  const { page, pageSize, offset } = parsePage(request);
-  const { activeSessions } = await getDashboardSessions(auth.user);
-  const pageItems = activeSessions.slice(offset, offset + pageSize);
+  const { page, pageSize } = parsePage(request);
+  const { activeSessions, paging } = await getDashboardSessions(auth.user, {
+    activePage: page,
+    archivePage: 1,
+    pageSize,
+  });
+  const activePaging = paging?.active ?? {
+    page,
+    pageSize,
+    total: activeSessions.length,
+    totalPages: Math.max(Math.ceil(activeSessions.length / pageSize), 1),
+  };
 
   return Response.json({
-    data: pageItems.map((session) => ({
+    data: activeSessions.map((session) => ({
       id: session.id,
       group: { id: session.groupId, title: session.groupTitle },
       venue: { name: session.venueName },
@@ -30,11 +39,6 @@ export async function GET(request: NextRequest) {
       attendanceSummary: session.attendanceSummary,
       commentsCount: session.commentsCount,
     })),
-    paging: {
-      page,
-      pageSize,
-      total: activeSessions.length,
-      hasMore: offset + pageSize < activeSessions.length,
-    },
+    paging: paginationMeta(activePaging.page, activePaging.pageSize, activePaging.total),
   });
 }

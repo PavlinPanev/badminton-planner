@@ -1,6 +1,6 @@
 import { router, usePathname } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type DimensionValue, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radii, shadow, spacing } from '@/theme/mobile-theme';
@@ -98,7 +98,7 @@ export function SportHeader({
 }
 
 export function ProgressBar({ value, tone = 'emerald' }: { value: number; tone?: Tone }) {
-  const width = `${Math.max(0, Math.min(value, 1)) * 100}%`;
+  const width = `${Math.max(0, Math.min(value, 1)) * 100}%` as DimensionValue;
   const fillColor = toneStyles[tone].color;
   return (
     <View style={styles.progressTrack}>

@@ -1,0 +1,16 @@
+
+> badminton-web@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.2.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://10.15.75.70:3000
+- Environments: .env
+✓ Ready in 2.2s
+
+○ Compiling / ...
+ GET / 200 in 10.5s (next.js: 6.8s, proxy.ts: 453ms, application-code: 3.3s)
+ GET /api/docs 200 in 1879ms (next.js: 1796ms, proxy.ts: 35ms, application-code: 48ms)
+ GET /dashboard 200 in 6.4s (next.js: 2.7s, proxy.ts: 81ms, application-code: 3.6s)
+ GET /api/events?page=1&pageSize=50 200 in 5.0s (next.js: 3.4s, proxy.ts: 23ms, application-code: 1602ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 5.4s (next.js: 3.4s, proxy.ts: 22ms, application-code: 1979ms)

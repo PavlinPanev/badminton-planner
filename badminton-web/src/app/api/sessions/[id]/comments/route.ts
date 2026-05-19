@@ -1,7 +1,7 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { getApiUser, jsonError } from "@/auth/api";
+import { getApiUser, jsonError, paginationMeta, parsePage } from "@/auth/api";
 import { db, sessionComments, users } from "@/db";
 import { canManageSession, getSessionGroupForUser } from "@/lib/session-data";
 
@@ -34,7 +34,12 @@ export async function GET(
     return jsonError("You are not a member of this session group.", 403);
   }
 
+  const { page, pageSize, offset } = parsePage(request);
   const canManageComments = await canManageSession(sessionId, auth.user);
+  const [{ total: totalCount }] = await db
+    .select({ total: count() })
+    .from(sessionComments)
+    .where(eq(sessionComments.sessionId, sessionId));
   const comments = await db
     .select({
       id: sessionComments.id,
@@ -46,13 +51,16 @@ export async function GET(
     .from(sessionComments)
     .innerJoin(users, eq(sessionComments.userId, users.id))
     .where(eq(sessionComments.sessionId, sessionId))
-    .orderBy(desc(sessionComments.commentedAt));
+    .orderBy(desc(sessionComments.commentedAt), desc(sessionComments.id))
+    .limit(pageSize)
+    .offset(offset);
 
   return Response.json({
     data: comments.map((comment) => ({
       ...comment,
       canEdit: comment.userId === auth.user.id || canManageComments,
     })),
+    paging: paginationMeta(page, pageSize, totalCount),
   });
 }
 

@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/auth/session";
 import { Card } from "@/components/ui/surfaces";
 import { getAnnouncementFormContextForUser, getEditableAnnouncementForUser } from "@/lib/group-data";
-import { deleteAnnouncementAction } from "../../../../../announcement-actions";
+import { deleteAnnouncementAction } from "../../../../announcement-actions";
 
 export default async function DeleteGroupAnnouncementPage({
   params,
@@ -59,7 +59,7 @@ export default async function DeleteGroupAnnouncementPage({
               <p className="text-xs font-black uppercase tracking-[0.18em] text-rose-700">Confirm delete</p>
               <h1 className="mt-3 text-3xl font-black tracking-normal text-zinc-950">Delete announcement?</h1>
               <p className="mt-4 text-sm leading-6 text-zinc-700">
-                This will remove the announcement "{announcement.title}" from {context.group.title}.
+                This will remove the announcement &ldquo;{announcement.title}&rdquo; from {context.group.title}.
               </p>
             </div>
           </div>

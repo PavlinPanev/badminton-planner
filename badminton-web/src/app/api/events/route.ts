@@ -1,7 +1,7 @@
-import { and, asc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { getApiUser, parsePage } from "@/auth/api";
+import { getApiUser, paginationMeta, parsePage } from "@/auth/api";
 import { db, eventRegistrations, events, venues } from "@/db";
 
 type EventRegistrationState = "registered" | "waitlisted" | "canceled" | "not_registered";
@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
   }
 
   const { page, pageSize, offset } = parsePage(request);
+  const where = gte(events.eventDate, new Date());
+  const [{ total: totalCount }] = await db.select({ total: count() }).from(events).where(where);
   const rows = await db
     .select({
       id: events.id,
@@ -45,11 +47,12 @@ export async function GET(request: NextRequest) {
     })
     .from(events)
     .innerJoin(venues, eq(events.venueId, venues.id))
-    .where(gte(events.eventDate, new Date()))
-    .orderBy(asc(events.eventDate));
+    .where(where)
+    .orderBy(asc(events.eventDate), asc(events.id))
+    .limit(pageSize)
+    .offset(offset);
 
-  const pageItems = rows.slice(offset, offset + pageSize);
-  const pageEventIds = pageItems.map((event) => event.id);
+  const pageEventIds = rows.map((event) => event.id);
   const registrations =
     auth?.user && pageEventIds.length
       ? await db
@@ -69,7 +72,7 @@ export async function GET(request: NextRequest) {
   }, new Map());
 
   return Response.json({
-    data: pageItems.map((event) => ({
+    data: rows.map((event) => ({
       id: event.id,
       title: event.title,
       description: event.description,
@@ -84,11 +87,6 @@ export async function GET(request: NextRequest) {
         city: event.city,
       },
     })),
-    paging: {
-      page,
-      pageSize,
-      total: rows.length,
-      hasMore: offset + pageSize < rows.length,
-    },
+    paging: paginationMeta(page, pageSize, totalCount),
   });
 }
