@@ -4,15 +4,9 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { useAuth } from '@/auth/auth-context';
 import { MobileCard, PrimaryButton, ScreenShell, SportHeader, StatTile } from '@/components/mobile-ui';
-import type { SessionListItem } from '@/components/session-card';
-import type { EventListItem } from '@/components/event-card';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
-import type { PagedResponse } from 'badminton-shared';
-
-type SessionsResponse = PagedResponse<SessionListItem>;
-
-type EventsResponse = PagedResponse<EventListItem>;
+import type { EventsResponse, SessionsResponse } from 'badminton-shared';
 
 type DashboardStats = {
   sessionsTotal: number;

@@ -1,14 +1,13 @@
 import "server-only";
 
 import { and, asc, count, eq, gte, inArray, isNull } from "drizzle-orm";
+import type { EventDetail, EventsResponse, RegistrationState } from "badminton-shared";
 
 import type { AuthUser } from "@/auth/token";
 import { paginationMeta } from "@/auth/api";
 import { db, eventRegistrations, events, players, users, venues } from "@/db";
 
-type EventRegistrationState = "registered" | "waitlisted" | "canceled" | "not_registered";
-
-function resolveRegistrationState(statuses: string[]): EventRegistrationState {
+function resolveRegistrationState(statuses: string[]): RegistrationState {
   if (statuses.includes("registered")) {
     return "registered";
   }
@@ -24,7 +23,10 @@ function resolveRegistrationState(statuses: string[]): EventRegistrationState {
   return "not_registered";
 }
 
-export async function listEvents(user: AuthUser | null, options: { page: number; pageSize: number; offset: number }) {
+export async function listEvents(
+  user: AuthUser | null,
+  options: { page: number; pageSize: number; offset: number },
+): Promise<EventsResponse> {
   const where = gte(events.eventDate, new Date());
   const [{ total: totalCount }] = await db.select({ total: count() }).from(events).where(where);
   const rows = await db
@@ -71,7 +73,7 @@ export async function listEvents(user: AuthUser | null, options: { page: number;
       title: event.title,
       description: event.description,
       eventType: "public",
-      eventDate: event.eventDate,
+      eventDate: event.eventDate.toISOString(),
       capacity: event.capacity,
       canceled: event.canceled,
       registrationState: resolveRegistrationState(registrationStatusesByEventId.get(event.id) ?? []),
@@ -129,7 +131,7 @@ export async function getEventDetail(eventId: number, user: AuthUser | null) {
       title: event.title,
       description: event.description,
       eventType: "public",
-      eventDate: event.eventDate,
+      eventDate: event.eventDate.toISOString(),
       capacity: event.capacity,
       canceled: event.canceled,
       registrationState: resolveRegistrationState(
@@ -145,12 +147,12 @@ export async function getEventDetail(eventId: number, user: AuthUser | null) {
       },
       registrations: registrations.map((registration) => ({
         id: registration.id,
-        status: registration.status,
-        registeredAt: registration.registeredAt,
+        status: registration.status as Exclude<RegistrationState, "not_registered">,
+        registeredAt: registration.registeredAt.toISOString(),
         userName: registration.userName,
         playerName: registration.playerName,
       })),
-    },
+    } satisfies EventDetail,
   };
 }
 

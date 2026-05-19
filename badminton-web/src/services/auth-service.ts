@@ -2,23 +2,14 @@ import "server-only";
 
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
+import type { AuthResponse } from "badminton-shared";
 
 import { createSessionToken } from "@/auth/token";
 import { db, users } from "@/db";
 
 export type AuthServiceResult =
   | {
-      data: {
-        token: string;
-        tokenType: "Bearer";
-        user: {
-          id: number;
-          email: string;
-          name: string;
-          role: "admin" | "manager" | "coach" | "parent";
-          photoUrl: string | null;
-        };
-      };
+      data: AuthResponse;
       error?: never;
     }
   | {

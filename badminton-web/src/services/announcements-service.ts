@@ -1,6 +1,7 @@
 import "server-only";
 
 import { count, desc, eq, inArray } from "drizzle-orm";
+import type { AnnouncementsResponse } from "badminton-shared";
 
 import type { AuthUser } from "@/auth/token";
 import { paginationMeta } from "@/auth/api";
@@ -30,7 +31,10 @@ async function getUserGroupIds(userId: number) {
   return Array.from(new Set([...directMemberships, ...playerMemberships].map((membership) => membership.groupId)));
 }
 
-export async function listAnnouncements(user: AuthUser, options: { page: number; pageSize: number; offset: number }) {
+export async function listAnnouncements(
+  user: AuthUser,
+  options: { page: number; pageSize: number; offset: number },
+): Promise<AnnouncementsResponse> {
   const groupIds = await getUserGroupIds(user.id);
 
   if (groupIds.length === 0) {
@@ -70,8 +74,8 @@ export async function listAnnouncements(user: AuthUser, options: { page: number;
       id: announcement.id,
       title: announcement.title,
       content: announcement.content,
-      createdAt: announcement.createdAt,
-      updatedAt: announcement.updatedAt,
+      createdAt: announcement.createdAt.toISOString(),
+      updatedAt: announcement.updatedAt.toISOString(),
       group: {
         id: announcement.groupId,
         title: announcement.groupTitle,

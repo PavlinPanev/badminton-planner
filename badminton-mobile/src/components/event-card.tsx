@@ -4,24 +4,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, MobileCard, ProgressBar } from '@/components/mobile-ui';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { EventListItem, RegistrationState } from 'badminton-shared';
 
-export type RegistrationState = 'registered' | 'waitlisted' | 'canceled' | 'not_registered';
-
-export type EventListItem = {
-  id: number;
-  title: string;
-  description: string | null;
-  eventType: 'public' | 'member';
-  eventDate: string;
-  capacity: number | null;
-  canceled: boolean;
-  registrationState: RegistrationState;
-  venue: {
-    id: number;
-    name: string;
-    city: string;
-  };
-};
+export type { EventListItem, RegistrationState };
 
 export function formatEventDate(value: string) {
   const date = new Date(value);

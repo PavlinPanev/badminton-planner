@@ -3,23 +3,9 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Badge, MobileCard } from '@/components/mobile-ui';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { AnnouncementListItem } from 'badminton-shared';
 
-export type AnnouncementListItem = {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  group: {
-    id: number;
-    title: string;
-  };
-  author: {
-    id: number;
-    name: string;
-    role: string;
-  };
-};
+export type { AnnouncementListItem };
 
 export function formatAnnouncementDate(value: string) {
   const date = new Date(value);

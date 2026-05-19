@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, count, desc, eq } from "drizzle-orm";
+import type { SessionDetail, SessionsResponse } from "badminton-shared";
 
 import type { AuthUser } from "@/auth/token";
 import { paginationMeta } from "@/auth/api";
@@ -14,7 +15,7 @@ import {
 } from "@/lib/session-data";
 import { formatSessionDate, formatSessionTime, getSessionState } from "@/lib/session-status";
 
-export async function getSessionsList(user: AuthUser, options: { page: number; pageSize: number }) {
+export async function getSessionsList(user: AuthUser, options: { page: number; pageSize: number }): Promise<SessionsResponse> {
   const { activeSessions, paging } = await getDashboardSessions(user, {
     activePage: options.page,
     archivePage: 1,
@@ -89,10 +90,10 @@ export async function getSessionDetail(user: AuthUser, sessionId: number) {
         userId: comment.userId,
         text: comment.text,
         authorName: comment.authorName,
-        commentedAt: comment.commentedAt,
+        commentedAt: comment.commentedAt.toISOString(),
         canEdit: comment.userId === user.id || canManageComments,
       })),
-    },
+    } satisfies SessionDetail,
   };
 }
 

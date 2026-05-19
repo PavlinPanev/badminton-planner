@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "badminton-shared": ["../badminton-shared/src"],
+      "badminton-shared/*": ["../badminton-shared/src/*"]
     }
   },
   "include": [

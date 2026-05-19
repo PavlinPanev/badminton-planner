@@ -4,33 +4,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, MobileCard, ProgressBar } from '@/components/mobile-ui';
 import { colors, spacing } from '@/theme/mobile-theme';
+import type { AttendanceSummary, SessionListItem } from 'badminton-shared';
 
-export type AttendanceSummary = {
-  attending: number;
-  absent: number;
-  maybe: number;
-  'no response': number;
-};
-
-export type SessionListItem = {
-  id: number;
-  group: {
-    id: number;
-    title: string;
-  };
-  venue: {
-    name: string;
-  };
-  date: string;
-  formattedDate: string;
-  time: string;
-  state: string;
-  canceled: boolean;
-  capacity: number | null;
-  capacityState: string;
-  attendanceSummary: AttendanceSummary;
-  commentsCount: number;
-};
+export type { AttendanceSummary, SessionListItem };
 
 function stateTone(session: SessionListItem) {
   if (session.canceled) {

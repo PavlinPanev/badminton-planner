@@ -6,11 +6,9 @@ import { GroupCard } from '@/components/group-card';
 import { EmptyState, MessagePanel, ScreenShell, SportHeader } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
-import type { GroupListItem, PagedResponse } from 'badminton-shared';
+import type { GroupListItem, GroupsResponse } from 'badminton-shared';
 
 const pageSize = 10;
-
-type GroupsResponse = PagedResponse<GroupListItem>;
 
 export default function GroupsScreen() {
   const { token, logout } = useAuth();

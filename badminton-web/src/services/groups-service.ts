@@ -1,10 +1,12 @@
 import "server-only";
 
+import type { GroupDetail, GroupRole, GroupsResponse } from "badminton-shared";
+
 import type { AuthUser } from "@/auth/token";
 import { paginationMeta } from "@/auth/api";
 import { getGroupAgeLabel, getGroupDetailPageForUser, getGroupsPageForUser } from "@/lib/group-data";
 
-export async function listGroups(user: AuthUser, options: { page: number; pageSize: number }) {
+export async function listGroups(user: AuthUser, options: { page: number; pageSize: number }): Promise<GroupsResponse> {
   const { groups, paging } = await getGroupsPageForUser(user, { page: options.page, pageSize: options.pageSize });
 
   return {
@@ -25,7 +27,7 @@ export async function listGroups(user: AuthUser, options: { page: number; pageSi
         playerCount: group.playerCount,
         sessionCount: group.sessionCount,
       },
-      roles: group.roles,
+      roles: group.roles as GroupRole[],
       canManage: group.canManage,
     })),
     paging: paginationMeta(options.page, options.pageSize, paging.total),
@@ -72,7 +74,7 @@ export async function getGroupDetail(user: AuthUser, groupId: number, pageSize: 
         playerCount: group.playerCount,
         sessionCount: group.sessionCount,
       },
-      roles: group.roles,
+      roles: group.roles as GroupRole[],
       canManage: group.canManage,
       currentUserRole: group.currentUserRole,
       canLeave: group.canLeave,
@@ -90,6 +92,6 @@ export async function getGroupDetail(user: AuthUser, groupId: number, pageSize: 
         coachName: session.coachName,
       })),
       announcements: group.announcements,
-    },
+    } satisfies GroupDetail,
   };
 }

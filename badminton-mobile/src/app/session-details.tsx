@@ -15,58 +15,14 @@ import { useAuth } from '@/auth/auth-context';
 import { AttendanceButton, Badge, MobileCard, ProgressBar, ScreenShell } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors } from '@/theme/mobile-theme';
+import type {
+  AttendanceStatus,
+  SessionComment,
+  SessionDetail,
+  SessionDetailResponse,
+} from 'badminton-shared';
 
-type AttendanceStatus = 'attending' | 'absent' | 'maybe' | 'no response';
 type AttendanceUpdateStatus = Exclude<AttendanceStatus, 'no response'>;
-
-type AttendanceSummary = Record<AttendanceStatus, number>;
-
-type SessionAttendance = {
-  memberId: string;
-  playerId: number | null;
-  userId: number | null;
-  name: string;
-  role: string;
-  status: AttendanceStatus;
-  note: string | null;
-};
-
-type SessionComment = {
-  id: number;
-  userId: number;
-  text: string;
-  authorName: string;
-  commentedAt: string;
-  canEdit: boolean;
-};
-
-type SessionDetail = {
-  id: number;
-  date: string;
-  time: string;
-  venue: {
-    name: string;
-  };
-  group: {
-    id: number;
-    title: string;
-  };
-  coach: {
-    name: string | null;
-  };
-  state: string;
-  active: boolean;
-  canceled: boolean;
-  capacity: number | null;
-  capacityState: string;
-  attendanceSummary: AttendanceSummary;
-  attendance: SessionAttendance[];
-  comments: SessionComment[];
-};
-
-type SessionDetailResponse = {
-  data: SessionDetail;
-};
 
 const statusOptions: { label: string; value: AttendanceUpdateStatus }[] = [
   { label: 'Attending', value: 'attending' },

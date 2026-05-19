@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { AuthResponse, AuthUser } from 'badminton-shared';
 
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { deleteStoredAuthValue, getStoredAuthValue, setStoredAuthValue } from './token-storage';
@@ -6,19 +7,7 @@ import { deleteStoredAuthValue, getStoredAuthValue, setStoredAuthValue } from '.
 const tokenStorageKey = 'badminton.jwt';
 const userStorageKey = 'badminton.user';
 
-export type AuthUser = {
-  id: number;
-  email: string;
-  name: string;
-  role: 'admin' | 'manager' | 'coach' | 'parent';
-  photoUrl?: string | null;
-};
-
-type LoginResponse = {
-  token: string;
-  tokenType: 'Bearer';
-  user: AuthUser;
-};
+export type { AuthUser };
 
 type AuthContextValue = {
   isLoading: boolean;
@@ -81,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new ApiError(await readApiError(response), response.status);
     }
 
-    const body = (await response.json()) as LoginResponse;
+    const body = (await response.json()) as AuthResponse;
 
     if (!body.token || body.tokenType !== 'Bearer' || !body.user) {
       throw new ApiError('The login response was missing authentication details.');
@@ -111,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new ApiError(await readApiError(response), response.status);
     }
 
-    const body = (await response.json()) as LoginResponse;
+    const body = (await response.json()) as AuthResponse;
 
     if (!body.token || body.tokenType !== 'Bearer' || !body.user) {
       throw new ApiError('The register response was missing authentication details.');

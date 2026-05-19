@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { EventCard, type EventListItem } from '@/components/event-card';
+import { EventCard } from '@/components/event-card';
 import { EmptyState, MessagePanel, ScreenShell, SportHeader } from '@/components/mobile-ui';
 import { useAuth } from '@/auth/auth-context';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors, spacing } from '@/theme/mobile-theme';
-import type { PagedResponse } from 'badminton-shared';
+import type { EventListItem, EventsResponse } from 'badminton-shared';
 
 const pageSize = 10;
-
-type EventsResponse = PagedResponse<EventListItem>;
 
 export default function EventsScreen() {
   const { token, logout } = useAuth();

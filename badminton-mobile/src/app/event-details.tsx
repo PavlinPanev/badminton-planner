@@ -14,38 +14,7 @@ import { useAuth } from '@/auth/auth-context';
 import { Badge, MobileCard, PrimaryButton, ProgressBar, ScreenShell } from '@/components/mobile-ui';
 import { ApiError, apiEndpoint, readApiError } from '@/lib/api';
 import { colors } from '@/theme/mobile-theme';
-
-type RegistrationState = 'registered' | 'waitlisted' | 'canceled' | 'not_registered';
-
-type EventRegistration = {
-  id: number;
-  status: Exclude<RegistrationState, 'not_registered'>;
-  registeredAt: string;
-  userName: string;
-  playerName: string | null;
-};
-
-type EventDetail = {
-  id: number;
-  title: string;
-  description: string | null;
-  eventType: 'public' | 'member';
-  eventDate: string;
-  capacity: number | null;
-  canceled: boolean;
-  registrationState: RegistrationState;
-  venue: {
-    id: number;
-    name: string;
-    address: string;
-    city: string;
-  };
-  registrations: EventRegistration[];
-};
-
-type EventDetailResponse = {
-  data: EventDetail;
-};
+import type { EventDetail, EventDetailResponse, RegistrationState } from 'badminton-shared';
 
 function formatDate(value: string) {
   const date = new Date(value);
