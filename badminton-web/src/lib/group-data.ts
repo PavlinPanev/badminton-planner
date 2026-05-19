@@ -53,6 +53,7 @@ export type GroupDetailData = UserGroupCardData & {
     venueName: string;
     coachName: string | null;
   }[];
+  canManageSessions: boolean;
 };
 
 export type GroupFormData = {
@@ -69,6 +70,32 @@ export type VenueOption = {
   id: number;
   name: string;
   city: string;
+};
+
+export type CoachOption = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+export type SessionFormData = {
+  id: number;
+  groupId: number;
+  sessionDate: string;
+  startTime: string;
+  venueId: number;
+  coachUserId: number | null;
+  capacity: number | null;
+  canceled: boolean;
+};
+
+export type SessionFormContext = {
+  group: {
+    id: number;
+    title: string;
+  };
+  venues: VenueOption[];
+  coaches: CoachOption[];
 };
 
 async function getOwnedPlayerIds(user: AuthUser) {
@@ -196,6 +223,25 @@ export async function canManageGroup(groupId: number, user: AuthUser) {
   return Boolean(membership);
 }
 
+export async function canManageGroupSessions(groupId: number, user: AuthUser) {
+  if (user.role === "admin") {
+    return true;
+  }
+
+  const [membership] = await db
+    .select({ role: groupMembers.role })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
+    .limit(1);
+
+  return membership?.role === "manager" || membership?.role === "coach";
+}
+
+export async function canViewGroup(groupId: number, user: AuthUser) {
+  const accessibleGroupIds = await getUserGroupIds(user);
+  return accessibleGroupIds.includes(groupId);
+}
+
 export function canCreateGroups(user: AuthUser) {
   return user.role === "manager" || user.role === "admin";
 }
@@ -209,6 +255,74 @@ export async function getVenueOptions(): Promise<VenueOption[]> {
     })
     .from(venues)
     .orderBy(asc(venues.city), asc(venues.name));
+}
+
+async function getCoachOptions(groupId: number): Promise<CoachOption[]> {
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+    })
+    .from(groupMembers)
+    .innerJoin(users, eq(groupMembers.userId, users.id))
+    .where(and(eq(groupMembers.groupId, groupId), inArray(groupMembers.role, ["coach", "manager"])))
+    .orderBy(asc(users.name));
+
+  return rows;
+}
+
+export async function getSessionFormContextForUser(groupId: number, user: AuthUser) {
+  const [group] = await db.select({ id: groups.id, title: groups.title }).from(groups).where(eq(groups.id, groupId)).limit(1);
+
+  if (!group) {
+    return { status: "not-found" as const, context: null };
+  }
+
+  if (!(await canManageGroupSessions(groupId, user))) {
+    return { status: "forbidden" as const, context: null };
+  }
+
+  const [venueOptions, coachOptions] = await Promise.all([getVenueOptions(), getCoachOptions(groupId)]);
+
+  return {
+    status: "ok" as const,
+    context: {
+      group,
+      venues: venueOptions,
+      coaches: coachOptions,
+    } satisfies SessionFormContext,
+  };
+}
+
+export async function getEditableSessionForUser(groupId: number, sessionId: number, user: AuthUser) {
+  const [session] = await db
+    .select({
+      id: sessions.id,
+      groupId: sessions.groupId,
+      sessionDate: sessions.sessionDate,
+      startTime: sessions.startTime,
+      venueId: sessions.venueId,
+      coachUserId: sessions.coachUserId,
+      capacity: sessions.capacity,
+      canceled: sessions.canceled,
+    })
+    .from(sessions)
+    .where(and(eq(sessions.id, sessionId), eq(sessions.groupId, groupId)))
+    .limit(1);
+
+  if (!session) {
+    return { status: "not-found" as const, session: null };
+  }
+
+  if (!(await canManageGroupSessions(groupId, user))) {
+    return { status: "forbidden" as const, session: null };
+  }
+
+  return {
+    status: "ok" as const,
+    session,
+  };
 }
 
 export async function getEditableGroupForUser(groupId: number, user: AuthUser) {
@@ -272,7 +386,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
   }
 
   const parentUsers = alias(users, "parent_users");
-  const [memberRows, sessionRows, stats, userGroups] = await Promise.all([
+  const [memberRows, sessionRows, stats, userGroups, canManageSessions] = await Promise.all([
     db
       .select({
         memberId: groupMembers.id,
@@ -310,6 +424,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       .limit(12),
     getGroupStats(groupId),
     getGroupsForUser(user),
+    canManageGroupSessions(groupId, user),
   ]);
 
   const directMembers = memberRows
@@ -339,6 +454,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       ...stats,
       roles: userGroups.find((userGroup) => userGroup.id === groupId)?.roles ?? [],
       canManage: userGroups.find((userGroup) => userGroup.id === groupId)?.canManage ?? false,
+      canManageSessions,
       coaches,
       players: playerRows,
       members: directMembers,

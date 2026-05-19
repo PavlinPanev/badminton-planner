@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  CalendarPlus,
   GraduationCap,
   Mail,
   MapPin,
@@ -61,23 +62,47 @@ function SessionList({ group }: { group: GroupDetailData }) {
 
   return (
     <div className="overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-      <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-200 bg-gradient-to-r from-lime-50 to-sky-50 px-5 py-4 text-xs font-black uppercase tracking-wide text-zinc-600 md:grid-cols-[1fr_120px_160px_120px]">
+      <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-200 bg-gradient-to-r from-lime-50 to-sky-50 px-5 py-4 text-xs font-black uppercase tracking-wide text-zinc-600 md:grid-cols-[1fr_120px_160px_120px_170px]">
         <span>Session</span>
         <span>Status</span>
         <span className="hidden md:block">Venue</span>
         <span className="hidden md:block">Capacity</span>
+        <span className="hidden md:block">Actions</span>
       </div>
       {group.sessions.map((session) => (
-        <Link
+        <div
           key={session.id}
-          href={`/sessions/${session.id}`}
-          className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-100 px-5 py-4 text-sm transition last:border-b-0 hover:bg-emerald-50/60 md:grid-cols-[1fr_120px_160px_120px]"
+          className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-100 px-5 py-4 text-sm transition last:border-b-0 hover:bg-emerald-50/60 md:grid-cols-[1fr_120px_160px_120px_170px]"
         >
           <div>
             <p className="font-black text-zinc-950">
               {formatSessionDate(session.sessionDate)} at {formatSessionTime(session.startTime)}
             </p>
             <p className="mt-1 text-xs font-semibold text-zinc-600">Coach: {session.coachName ?? "Not assigned"}</p>
+            <div className="mt-3 flex flex-wrap gap-2 md:hidden">
+              <Link
+                href={`/sessions/${session.id}`}
+                className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-black text-white"
+              >
+                View
+              </Link>
+              {group.canManageSessions ? (
+                <>
+                  <Link
+                    href={`/groups/${group.id}/sessions/${session.id}/edit`}
+                    className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-800"
+                  >
+                    Edit
+                  </Link>
+                  <Link
+                    href={`/groups/${group.id}/sessions/${session.id}/delete`}
+                    className="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-800"
+                  >
+                    Delete
+                  </Link>
+                </>
+              ) : null}
+            </div>
           </div>
           <div className="flex items-start">
             {session.canceled ? (
@@ -90,7 +115,31 @@ function SessionList({ group }: { group: GroupDetailData }) {
           </div>
           <span className="hidden font-semibold text-zinc-700 md:block">{session.venueName}</span>
           <span className="hidden font-semibold text-zinc-700 md:block">{session.capacity ?? "Open"}</span>
-        </Link>
+          <div className="hidden flex-wrap gap-2 md:flex">
+            <Link
+              href={`/sessions/${session.id}`}
+              className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-black text-white transition hover:bg-emerald-700"
+            >
+              View
+            </Link>
+            {group.canManageSessions ? (
+              <>
+                <Link
+                  href={`/groups/${group.id}/sessions/${session.id}/edit`}
+                  className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-800 transition hover:bg-sky-200"
+                >
+                  Edit
+                </Link>
+                <Link
+                  href={`/groups/${group.id}/sessions/${session.id}/delete`}
+                  className="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-800 transition hover:bg-rose-200"
+                >
+                  Delete
+                </Link>
+              </>
+            ) : null}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -297,11 +346,22 @@ export default async function GroupDetailPage({
       </section>
 
       <section className="mt-10">
-        <SectionHeader
-          eyebrow="Schedule"
-          title="Group Sessions"
-          description="Recent and upcoming sessions connected to this group."
-        />
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <SectionHeader
+            eyebrow="Schedule"
+            title="Group Sessions"
+            description="Recent and upcoming sessions connected to this group."
+          />
+          {group.canManageSessions ? (
+            <Link
+              href={`/groups/${group.id}/sessions/new`}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+            >
+              <CalendarPlus aria-hidden="true" className="h-4 w-4" />
+              Create
+            </Link>
+          ) : null}
+        </div>
         <div className="mt-5">
           <SessionList group={group} />
         </div>
