@@ -3,7 +3,9 @@ import {
   GraduationCap,
   Mail,
   MapPin,
+  Pencil,
   ShieldCheck,
+  Trash2,
   Trophy,
   UserRoundCheck,
   UsersRound,
@@ -178,6 +180,24 @@ export default async function GroupDetailPage({
                 {role}
               </span>
             ))}
+            {group.canManage ? (
+              <>
+                <Link
+                  href={`/groups/${group.id}/edit`}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-sky-700 ring-1 ring-sky-200 transition hover:bg-sky-50"
+                >
+                  <Pencil aria-hidden="true" className="h-4 w-4" />
+                  Edit
+                </Link>
+                <Link
+                  href={`/groups/${group.id}/delete`}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50"
+                >
+                  <Trash2 aria-hidden="true" className="h-4 w-4" />
+                  Delete
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
 

@@ -1,17 +1,14 @@
 import Link from "next/link";
-import { MapPin, ShieldCheck, Trophy, UsersRound } from "lucide-react";
+import { MapPin, Pencil, Plus, ShieldCheck, Trash2, Trophy, UsersRound } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
 import { EmptyState, SectionHeader } from "@/components/ui/surfaces";
-import { getGroupAgeLabel, getGroupsForUser, type UserGroupCardData } from "@/lib/group-data";
+import { canCreateGroups, getGroupAgeLabel, getGroupsForUser, type UserGroupCardData } from "@/lib/group-data";
 
 function GroupCard({ group }: { group: UserGroupCardData }) {
   return (
-    <Link
-      href={`/groups/${group.id}`}
-      className="group block overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-zinc-950/5 transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(16,185,129,0.18)] focus:outline-none focus:ring-2 focus:ring-emerald-600"
-    >
+    <article className="group overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-zinc-950/5 transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(16,185,129,0.18)]">
       <div className="h-2 bg-gradient-to-r from-emerald-400 via-lime-300 to-sky-400" />
       <div className="p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -24,9 +21,12 @@ function GroupCard({ group }: { group: UserGroupCardData }) {
                 ages {getGroupAgeLabel(group)}
               </span>
             </div>
-            <h2 className="mt-4 text-2xl font-black tracking-normal text-zinc-950 group-hover:text-emerald-800">
+            <Link
+              href={`/groups/${group.id}`}
+              className="mt-4 block text-2xl font-black tracking-normal text-zinc-950 transition hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            >
               {group.title}
-            </h2>
+            </Link>
             <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-600">
               {group.description ?? "Club group with shared sessions, players, and coaches."}
             </p>
@@ -53,8 +53,35 @@ function GroupCard({ group }: { group: UserGroupCardData }) {
           <MapPin aria-hidden="true" className="h-4 w-4 text-emerald-700" />
           {group.venueName}, {group.venueCity}
         </p>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href={`/groups/${group.id}`}
+            className="inline-flex min-h-10 items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-black text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+          >
+            View
+          </Link>
+          {group.canManage ? (
+            <>
+              <Link
+                href={`/groups/${group.id}/edit`}
+                className="inline-flex min-h-10 items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-black text-sky-700 transition hover:bg-sky-100 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              >
+                <Pencil aria-hidden="true" className="h-4 w-4" />
+                Edit
+              </Link>
+              <Link
+                href={`/groups/${group.id}/delete`}
+                className="inline-flex min-h-10 items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-black text-rose-700 transition hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100"
+              >
+                <Trash2 aria-hidden="true" className="h-4 w-4" />
+                Delete
+              </Link>
+            </>
+          ) : null}
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
 
@@ -66,6 +93,7 @@ export default async function GroupsPage() {
   }
 
   const groups = await getGroupsForUser(user);
+  const canCreate = canCreateGroups(user);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -93,11 +121,22 @@ export default async function GroupsPage() {
       </section>
 
       <section className="mt-10">
-        <SectionHeader
-          eyebrow="Membership"
-          title="Your Groups"
-          description="Only groups connected to your account or linked players are shown here."
-        />
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <SectionHeader
+            eyebrow="Membership"
+            title="Your Groups"
+            description="Only groups connected to your account or linked players are shown here."
+          />
+          {canCreate ? (
+            <Link
+              href="/groups/new"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              New
+            </Link>
+          ) : null}
+        </div>
         {groups.length ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
             {groups.map((group) => (
