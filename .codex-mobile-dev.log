@@ -80,3 +80,4 @@ Web Bundled 46ms badminton-mobile\node_modules\expo-router\entry.js (1 module)
 λ Bundled 61ms node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
 Web badminton-mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
 Web Bundled 9772ms badminton-mobile\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console

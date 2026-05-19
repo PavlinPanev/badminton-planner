@@ -1,7 +1,7 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { count, desc, eq, inArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { getApiUser, parsePage } from "@/auth/api";
+import { getApiUser, paginationMeta, parsePage } from "@/auth/api";
 import { db, groupAnnouncements, groupMembers, groups, players, users } from "@/db";
 
 async function getOwnedPlayerIds(userId: number) {
@@ -41,35 +41,34 @@ export async function GET(request: NextRequest) {
   if (groupIds.length === 0) {
     return Response.json({
       data: [],
-      paging: {
-        page,
-        pageSize,
-        total: 0,
-        hasMore: false,
-      },
+      paging: paginationMeta(page, pageSize, 0),
     });
   }
 
-  const rows = await db
-    .select({
-      id: groupAnnouncements.id,
-      title: groupAnnouncements.title,
-      content: groupAnnouncements.content,
-      createdAt: groupAnnouncements.createdAt,
-      updatedAt: groupAnnouncements.updatedAt,
-      groupId: groups.id,
-      groupTitle: groups.title,
-      authorId: users.id,
-      authorName: users.name,
-      authorRole: users.role,
-    })
-    .from(groupAnnouncements)
-    .innerJoin(groups, eq(groupAnnouncements.groupId, groups.id))
-    .innerJoin(users, eq(groupAnnouncements.authorId, users.id))
-    .where(inArray(groupAnnouncements.groupId, groupIds))
-    .orderBy(desc(groupAnnouncements.createdAt));
-
-  const pageItems = rows.slice(offset, offset + pageSize);
+  const where = inArray(groupAnnouncements.groupId, groupIds);
+  const [[{ total: totalCount }], pageItems] = await Promise.all([
+    db.select({ total: count() }).from(groupAnnouncements).where(where),
+    db
+      .select({
+        id: groupAnnouncements.id,
+        title: groupAnnouncements.title,
+        content: groupAnnouncements.content,
+        createdAt: groupAnnouncements.createdAt,
+        updatedAt: groupAnnouncements.updatedAt,
+        groupId: groups.id,
+        groupTitle: groups.title,
+        authorId: users.id,
+        authorName: users.name,
+        authorRole: users.role,
+      })
+      .from(groupAnnouncements)
+      .innerJoin(groups, eq(groupAnnouncements.groupId, groups.id))
+      .innerJoin(users, eq(groupAnnouncements.authorId, users.id))
+      .where(where)
+      .orderBy(desc(groupAnnouncements.createdAt))
+      .limit(pageSize)
+      .offset(offset),
+  ]);
 
   return Response.json({
     data: pageItems.map((announcement) => ({
@@ -88,11 +87,6 @@ export async function GET(request: NextRequest) {
         role: announcement.authorRole,
       },
     })),
-    paging: {
-      page,
-      pageSize,
-      total: rows.length,
-      hasMore: offset + pageSize < rows.length,
-    },
+    paging: paginationMeta(page, pageSize, totalCount),
   });
 }

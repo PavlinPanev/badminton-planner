@@ -1,0 +1,470 @@
+⨯ Error: Failed query: select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+params: performance.user1@badminton.test,1
+    at async POST (src\app\api\auth\login\route.ts:18:18)
+  16 |   }
+  17 |
+> 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+     |                  ^
+  19 |
+  20 |   if (!user) {
+  21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+  query: 'select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+  params: [ 'performance.user1@badminton.test', 1 ],
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async POST (src\app\api\auth\login\route.ts:18:18)
+    16 |   }
+    17 |
+  > 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+       |                  ^
+    19 |
+    20 |   if (!user) {
+    21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async getApiUser (src\auth\api.ts:40:18)
+    at async GET (src\app\api\events\route.ts:27:33)
+  38 |   }
+  39 |
+> 40 |   const [user] = await db
+     |                  ^
+  41 |     .select({
+  42 |       id: users.id,
+  43 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async getApiUser (src\auth\api.ts:40:18)
+      at async GET (src\app\api\events\route.ts:27:33)
+    38 |   }
+    39 |
+  > 40 |   const [user] = await db
+       |                  ^
+    41 |     .select({
+    42 |       id: users.id,
+    43 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async getApiUser (src\auth\api.ts:40:18)
+    at async GET (src\app\api\sessions\route.ts:8:16)
+  38 |   }
+  39 |
+> 40 |   const [user] = await db
+     |                  ^
+  41 |     .select({
+  42 |       id: users.id,
+  43 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async getApiUser (src\auth\api.ts:40:18)
+      at async GET (src\app\api\sessions\route.ts:8:16)
+    38 |   }
+    39 |
+  > 40 |   const [user] = await db
+       |                  ^
+    41 |     .select({
+    42 |       id: users.id,
+    43 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+[browser] Uncaught Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at  eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email,
+⨯ Error: Failed query: select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+params: performance.user1@badminton.test,1
+    at async POST (src\app\api\auth\login\route.ts:18:18)
+  16 |   }
+  17 |
+> 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+     |                  ^
+  19 |
+  20 |   if (!user) {
+  21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+  query: 'select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+  params: [ 'performance.user1@badminton.test', 1 ],
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async POST (src\app\api\auth\login\route.ts:18:18)
+    16 |   }
+    17 |
+  > 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+       |                  ^
+    19 |
+    20 |   if (!user) {
+    21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+⨯ Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at async eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email, {
+  query: 'select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2',
+  params: [ 3110, 1 ],
+  digest: '2268727565',
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async eval (src\auth\session.ts:56:18)
+    54 |   }
+    55 |
+  > 56 |   const [user] = await db
+       |                  ^
+    57 |     .select({
+    58 |       id: users.id,
+    59 |       email: users.email, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}
+[browser] Uncaught Error: Failed query: select "id", "email", "name", "role" from "users" where "users"."id" = $1 limit $2
+params: 3110,1
+    at  eval (src\auth\session.ts:56:18)
+  54 |   }
+  55 |
+> 56 |   const [user] = await db
+     |                  ^
+  57 |     .select({
+  58 |       id: users.id,
+  59 |       email: users.email,
+⨯ Error: Failed query: select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+params: performance.user1@badminton.test,1
+    at async POST (src\app\api\auth\login\route.ts:18:18)
+  16 |   }
+  17 |
+> 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+     |                  ^
+  19 |
+  20 |   if (!user) {
+  21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+  query: 'select "id", "email", "password_hash", "name", "role", "photo_url", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+  params: [ 'performance.user1@badminton.test', 1 ],
+  [cause]: Error [NeonDbError]: Server error (HTTP status 500): {"message":"Couldn't connect to compute node","code":"","detail":null,"hint":null,"position":null,"internalPosition":null,"internalQuery":null,"severity":"","where":null,"table":null,"column":null,"schema":null,"dataType":null,"constraint":null,"file":null,"line":null,"routine":null,"neon:retryable":true}
+      at async POST (src\app\api\auth\login\route.ts:18:18)
+    16 |   }
+    17 |
+  > 18 |   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+       |                  ^
+    19 |
+    20 |   if (!user) {
+    21 |     return Response.json({ error: { message: "The email or password is incorrect." } }, { ... {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: undefined
+  }
+}

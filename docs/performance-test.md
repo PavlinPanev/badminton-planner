@@ -41,6 +41,7 @@ From the repository root:
 npm install
 npm run db:migrate
 npm run db:seed:performance
+npm run test:performance
 ```
 
 Or from the web workspace:
@@ -49,6 +50,16 @@ Or from the web workspace:
 npm run db:migrate --workspace badminton-web
 npm run db:seed:performance --workspace badminton-web
 ```
+
+`npm run test:performance` expects the web app to be running locally. By default it calls `http://localhost:3000` and logs in with `performance.user1@badminton.test`.
+
+Optional environment variables:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `BADMINTON_PERFORMANCE_BASE_URL` | `http://localhost:3000` | Web/API base URL to test. |
+| `BADMINTON_PERFORMANCE_EMAIL` | `performance.user1@badminton.test` | Demo user used for API authentication. |
+| `BADMINTON_PERFORMANCE_PASSWORD` | `pass123` | Demo password used for API authentication. |
 
 All generated users use:
 
@@ -63,6 +74,7 @@ All generated users use:
 | --- | --- | --- |
 | Dashboard | Large session volume for active/archive lists. | Existing dashboard pagination uses database `limit`/`offset` through `getDashboardSessions`. |
 | Groups | Many group cards and group statistics. | Groups page now renders one server-side page at a time. |
+| Group details | Large player, member, announcement, and session sublists. | Group detail sublists now use independent server-side pagination. |
 | Events | Large event lists and registration counts. | Events list now uses database-level pagination and batched registration counts. |
 | Session details | Large attendance and comment data. | Session comment API supports pagination; attendance updates are scoped by session and player indexes. |
 | Mobile sessions | Active sessions endpoint previously sliced in memory. | `/api/sessions` now uses paged database queries and returns richer pagination metadata. |
@@ -74,6 +86,7 @@ All generated users use:
 | --- | --- |
 | `GET /api/sessions?page=1&pageSize=20` | Yes |
 | `GET /api/events?page=1&pageSize=20` | Yes |
+| `GET /api/announcements?page=1&pageSize=20` | Yes |
 | `GET /api/sessions/:id` | Detail endpoint, scoped by authenticated group access |
 | `GET /api/sessions/:id/comments?page=1&pageSize=20` | Yes |
 | `POST /api/sessions/:id/attendance` | Single player/session update |
@@ -120,17 +133,21 @@ Existing indexes already cover important lookups such as `users.email`, `players
 - Added reusable API pagination metadata.
 - Changed `/api/sessions` to use the paged dashboard query instead of slicing a fully loaded list.
 - Changed `/api/events` to use database `count`, `limit`, and `offset`.
+- Changed `/api/announcements` to use database `count`, `limit`, and `offset`.
 - Added pagination metadata to session comments API.
 - Added server-side pagination controls to the web Groups page.
 - Added server-side pagination controls to the web Events page.
+- Added independent pagination controls to group detail sublists for players, members, announcements, and sessions.
+- Added `npm run test:performance` for lightweight API timing checks.
+- Avoided loading all groups for admin session-detail and comment authorization checks.
 - Batched event registration counts for event list pages to avoid one count query per event card.
 - Preserved compatibility with the existing mobile infinite-scroll screens.
 
 ## Known Bottlenecks Found
 
-- Group detail pages still display members and a limited session preview, but a very large single group could benefit from separate member and session tabs with independent pagination.
 - Session detail pages return visible attendance data with the session detail response. For extremely large groups, attendance should be split into a dedicated paginated endpoint.
 - Offset pagination is simple and evaluator-friendly, but keyset pagination would be faster for very deep pages.
+- Local dev server timings include Next.js development overhead, local machine load, and remote database latency. Production timings should be measured separately after deployment.
 
 ## Before / After Notes
 
@@ -148,10 +165,27 @@ After optimization:
 - Additional indexes support common filters, joins, and sort orders.
 - The performance seed can be rerun locally to reproduce the same scale test.
 
+Latest local timing run:
+
+| Check | Status | Time |
+| --- | ---: | ---: |
+| `POST /api/auth/login` | 200 | 2,293 ms |
+| `GET /api/sessions?page=1&pageSize=20` | 200 | 1,456 ms |
+| `GET /api/events?page=1&pageSize=20` | 200 | 242 ms |
+| `GET /api/announcements?page=1&pageSize=20` | 200 | 1,556 ms |
+| `GET /api/sessions/8681` | 200 | 3,626 ms |
+| `GET /api/sessions/8681/comments?page=1&pageSize=20` | 200 | 1,663 ms |
+
+The timing script writes the latest machine-readable result to:
+
+```text
+docs/assessments/performance-check-latest.json
+```
+
 ## Recommended Future Improvements
 
-- Add automated API timing checks for `/api/sessions`, `/api/events`, and `/api/sessions/:id/comments`.
+- Add thresholds to `npm run test:performance` once deployed baseline timings are known.
 - Add database `EXPLAIN ANALYZE` snapshots for the highest-volume queries.
-- Move group detail members, session attendance, and event registrations into independently paginated subviews.
+- Move session attendance and event registrations into independently paginated subviews.
 - Add keyset pagination for sessions and comments.
-- Add a lightweight load-test script with thresholds for local and CI environments.
+- Add CI-safe performance smoke tests against a seeded test database.

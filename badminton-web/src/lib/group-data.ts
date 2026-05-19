@@ -23,12 +23,14 @@ export type UserGroupCardData = {
 
 export type UserGroupListResult = {
   groups: UserGroupCardData[];
-  paging: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
+  paging: PagingData;
+};
+
+export type PagingData = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 };
 
 export type GroupDetailData = UserGroupCardData & {
@@ -68,6 +70,12 @@ export type GroupDetailData = UserGroupCardData & {
   canManageSessions: boolean;
   announcements: GroupAnnouncementListItem[];
   canManageAnnouncements: boolean;
+  paging: {
+    players: PagingData;
+    members: PagingData;
+    announcements: PagingData;
+    sessions: PagingData;
+  };
 };
 
 export type GroupAnnouncementListItem = {
@@ -291,6 +299,15 @@ function normalizePage(value: number | undefined) {
 
 function normalizePageSize(value: number | undefined) {
   return Math.min(Math.max(Number(value) || 12, 1), 48);
+}
+
+function createPaging(page: number, pageSize: number, total: number): PagingData {
+  return {
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(Math.ceil(total / pageSize), 1),
+  };
 }
 
 export async function getGroupsPageForUser(
@@ -645,6 +662,20 @@ export async function getGroupMembersManagementForUser(groupId: number, user: Au
 }
 
 export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
+  return getGroupDetailPageForUser(groupId, user);
+}
+
+export async function getGroupDetailPageForUser(
+  groupId: number,
+  user: AuthUser,
+  options?: {
+    playersPage?: number;
+    membersPage?: number;
+    announcementsPage?: number;
+    sessionsPage?: number;
+    pageSize?: number;
+  },
+) {
   const accessibleGroupIds = await getUserGroupIds(user);
 
   if (!accessibleGroupIds.includes(groupId)) {
@@ -674,7 +705,30 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
   }
 
   const parentUsers = alias(users, "parent_users");
-  const [memberRows, sessionRows, announcementRows, stats, userGroups, canManageSessions, canManageAnnouncements] = await Promise.all([
+  const pageSize = normalizePageSize(options?.pageSize);
+  const playersPage = normalizePage(options?.playersPage);
+  const membersPage = normalizePage(options?.membersPage);
+  const announcementsPage = normalizePage(options?.announcementsPage);
+  const sessionsPage = normalizePage(options?.sessionsPage);
+  const playerWhere = and(eq(groupMembers.groupId, groupId), eq(groupMembers.role, "player"));
+  const memberWhere = and(eq(groupMembers.groupId, groupId), inArray(groupMembers.role, ["manager", "coach", "parent"]));
+  const announcementWhere = eq(groupAnnouncements.groupId, groupId);
+  const sessionWhere = eq(sessions.groupId, groupId);
+  const [
+    memberRows,
+    playerRows,
+    sessionRows,
+    announcementRows,
+    [{ total: membersTotal }],
+    [{ total: playersTotal }],
+    [{ total: sessionsTotal }],
+    [{ total: announcementsTotal }],
+    currentUserDirectMember,
+    stats,
+    userGroups,
+    canManageSessions,
+    canManageAnnouncements,
+  ] = await Promise.all([
     db
       .select({
         memberId: groupMembers.id,
@@ -682,6 +736,17 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
         userId: users.id,
         userName: users.name,
         userEmail: users.email,
+      })
+      .from(groupMembers)
+      .innerJoin(users, eq(groupMembers.userId, users.id))
+      .where(memberWhere)
+      .orderBy(asc(groupMembers.role), asc(users.name))
+      .limit(pageSize)
+      .offset((membersPage - 1) * pageSize),
+    db
+      .select({
+        memberId: groupMembers.id,
+        role: groupMembers.role,
         playerId: players.id,
         playerName: players.name,
         playerBirthYear: players.birthYear,
@@ -689,11 +754,12 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
         parentName: parentUsers.name,
       })
       .from(groupMembers)
-      .leftJoin(users, eq(groupMembers.userId, users.id))
-      .leftJoin(players, eq(groupMembers.playerId, players.id))
-      .leftJoin(parentUsers, eq(players.parentUserId, parentUsers.id))
-      .where(eq(groupMembers.groupId, groupId))
-      .orderBy(asc(groupMembers.role), asc(players.name), asc(users.name)),
+      .innerJoin(players, eq(groupMembers.playerId, players.id))
+      .innerJoin(parentUsers, eq(players.parentUserId, parentUsers.id))
+      .where(playerWhere)
+      .orderBy(asc(players.name))
+      .limit(pageSize)
+      .offset((playersPage - 1) * pageSize),
     db
       .select({
         id: sessions.id,
@@ -707,9 +773,10 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       .from(sessions)
       .innerJoin(venues, eq(sessions.venueId, venues.id))
       .leftJoin(users, eq(sessions.coachUserId, users.id))
-      .where(eq(sessions.groupId, groupId))
+      .where(sessionWhere)
       .orderBy(desc(sessions.sessionDate), desc(sessions.startTime))
-      .limit(12),
+      .limit(pageSize)
+      .offset((sessionsPage - 1) * pageSize),
     db
       .select({
         id: groupAnnouncements.id,
@@ -722,35 +789,41 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       })
       .from(groupAnnouncements)
       .innerJoin(users, eq(groupAnnouncements.authorId, users.id))
-      .where(eq(groupAnnouncements.groupId, groupId))
+      .where(announcementWhere)
       .orderBy(desc(groupAnnouncements.createdAt))
-      .limit(8),
+      .limit(pageSize)
+      .offset((announcementsPage - 1) * pageSize),
+    db.select({ total: count() }).from(groupMembers).where(memberWhere),
+    db.select({ total: count() }).from(groupMembers).where(playerWhere),
+    db.select({ total: count() }).from(sessions).where(sessionWhere),
+    db.select({ total: count() }).from(groupAnnouncements).where(announcementWhere),
+    db
+      .select({ id: groupMembers.id, role: groupMembers.role })
+      .from(groupMembers)
+      .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
     getGroupStats(groupId),
     getGroupsForUser(user),
     canManageGroupSessions(groupId, user),
     canManageGroupAnnouncements(groupId, user),
   ]);
 
-  const directMembers = memberRows
-    .filter((member) => member.userId)
-    .map((member) => ({
-      id: member.userId ?? member.memberId,
-      name: member.userName ?? "Unknown member",
-      email: member.userEmail ?? "",
-      role: member.role,
-    }));
+  const directMembers = memberRows.map((member) => ({
+    id: member.userId ?? member.memberId,
+    name: member.userName ?? "Unknown member",
+    email: member.userEmail ?? "",
+    role: member.role,
+  }));
 
   const coaches = directMembers.filter((member) => member.role === "coach" || member.role === "manager");
-  const currentUserDirectMember = memberRows.find((member) => member.userId === user.id);
-  const playerRows = memberRows
-    .filter((member) => member.playerId)
-    .map((member) => ({
-      id: member.playerId ?? member.memberId,
-      name: member.playerName ?? "Unknown player",
-      birthYear: member.playerBirthYear ?? 0,
-      skillLevel: member.playerSkillLevel ?? "beginner",
-      parentName: member.parentName ?? "Linked parent",
-    }));
+  const detailPlayers = playerRows.map((member) => ({
+    id: member.playerId ?? member.memberId,
+    name: member.playerName ?? "Unknown player",
+    birthYear: member.playerBirthYear ?? 0,
+    skillLevel: member.playerSkillLevel ?? "beginner",
+    parentName: member.parentName ?? "Linked parent",
+  }));
 
   return {
     status: "ok" as const,
@@ -764,7 +837,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       canManageSessions,
       canManageAnnouncements,
       coaches,
-      players: playerRows,
+      players: detailPlayers,
       members: directMembers,
       sessions: sessionRows.map((session) => ({
         ...session,
@@ -779,6 +852,12 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
         authorName: announcement.authorName,
         authorRole: announcement.authorRole,
       })),
+      paging: {
+        players: createPaging(playersPage, pageSize, playersTotal),
+        members: createPaging(membersPage, pageSize, membersTotal),
+        announcements: createPaging(announcementsPage, pageSize, announcementsTotal),
+        sessions: createPaging(sessionsPage, pageSize, sessionsTotal),
+      },
     },
   };
 }

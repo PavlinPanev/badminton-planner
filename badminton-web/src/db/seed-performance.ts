@@ -1,6 +1,6 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 
 import {
   db,
@@ -105,36 +105,36 @@ async function cleanupPerformanceData() {
     const performanceSessionIds = await db
       .select({ id: sessions.id })
       .from(sessions)
-      .where(sql`${sessions.groupId} = any(${groupIds})`);
+      .where(inArray(sessions.groupId, groupIds));
     const sessionIds = performanceSessionIds.map((session) => session.id);
 
     if (sessionIds.length) {
-      await db.delete(sessionComments).where(sql`${sessionComments.sessionId} = any(${sessionIds})`);
-      await db.delete(sessionAttendance).where(sql`${sessionAttendance.sessionId} = any(${sessionIds})`);
-      await db.delete(sessions).where(sql`${sessions.id} = any(${sessionIds})`);
+      await db.delete(sessionComments).where(inArray(sessionComments.sessionId, sessionIds));
+      await db.delete(sessionAttendance).where(inArray(sessionAttendance.sessionId, sessionIds));
+      await db.delete(sessions).where(inArray(sessions.id, sessionIds));
     }
 
-    await db.delete(groupAnnouncements).where(sql`${groupAnnouncements.groupId} = any(${groupIds})`);
-    await db.delete(groupInvitations).where(sql`${groupInvitations.groupId} = any(${groupIds})`);
-    await db.delete(groupMembers).where(sql`${groupMembers.groupId} = any(${groupIds})`);
-    await db.delete(groups).where(sql`${groups.id} = any(${groupIds})`);
+    await db.delete(groupAnnouncements).where(inArray(groupAnnouncements.groupId, groupIds));
+    await db.delete(groupInvitations).where(inArray(groupInvitations.groupId, groupIds));
+    await db.delete(groupMembers).where(inArray(groupMembers.groupId, groupIds));
+    await db.delete(groups).where(inArray(groups.id, groupIds));
   }
 
   if (performanceEventIds.length) {
     const eventIds = performanceEventIds.map((event) => event.id);
-    await db.delete(eventRegistrations).where(sql`${eventRegistrations.eventId} = any(${eventIds})`);
-    await db.delete(events).where(sql`${events.id} = any(${eventIds})`);
+    await db.delete(eventRegistrations).where(inArray(eventRegistrations.eventId, eventIds));
+    await db.delete(events).where(inArray(events.id, eventIds));
   }
 
   if (performanceUserIds.length) {
     const userIds = performanceUserIds.map((user) => user.id);
-    await db.delete(players).where(sql`${players.parentUserId} = any(${userIds})`);
-    await db.delete(users).where(sql`${users.id} = any(${userIds})`);
+    await db.delete(players).where(inArray(players.parentUserId, userIds));
+    await db.delete(users).where(inArray(users.id, userIds));
   }
 
   if (performanceVenueIds.length) {
     const venueIds = performanceVenueIds.map((venue) => venue.id);
-    await db.delete(venues).where(sql`${venues.id} = any(${venueIds})`);
+    await db.delete(venues).where(inArray(venues.id, venueIds));
   }
 }
 

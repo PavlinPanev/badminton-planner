@@ -17,7 +17,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/auth/session";
 import { StateBadge } from "@/components/session-badges";
 import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
-import { getGroupAgeLabel, getGroupDetailForUser, type GroupDetailData } from "@/lib/group-data";
+import { getGroupAgeLabel, getGroupDetailPageForUser, type GroupDetailData } from "@/lib/group-data";
 import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
 import { InviteLinkPanel } from "../invite-link-panel";
 import { LeaveGroupPanel } from "../leave-group-panel";
@@ -28,6 +28,94 @@ function StatPill({ label, value }: { label: string; value: string | number }) {
       <dt className="text-xs font-black uppercase tracking-wide text-lime-100">{label}</dt>
       <dd className="mt-1 text-sm font-bold text-white">{value}</dd>
     </div>
+  );
+}
+
+type GroupDetailSearchParams = {
+  playersPage?: string | string[];
+  membersPage?: string | string[];
+  announcementsPage?: string | string[];
+  sessionsPage?: string | string[];
+};
+
+function parsePositivePage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return Math.max(Number(raw ?? "1") || 1, 1);
+}
+
+function groupDetailHref(
+  groupId: number,
+  pages: {
+    playersPage: number;
+    membersPage: number;
+    announcementsPage: number;
+    sessionsPage: number;
+  },
+  key: keyof GroupDetailSearchParams,
+  value: number,
+) {
+  const searchParams = new URLSearchParams();
+  const nextPages = { ...pages, [key]: value };
+
+  for (const [param, page] of Object.entries(nextPages)) {
+    if (page > 1) {
+      searchParams.set(param, String(page));
+    }
+  }
+
+  const query = searchParams.toString();
+  return query ? `/groups/${groupId}?${query}` : `/groups/${groupId}`;
+}
+
+function SublistPagination({
+  groupId,
+  param,
+  pages,
+  paging,
+}: {
+  groupId: number;
+  param: keyof GroupDetailSearchParams;
+  pages: {
+    playersPage: number;
+    membersPage: number;
+    announcementsPage: number;
+    sessionsPage: number;
+  };
+  paging: GroupDetailData["paging"]["players"];
+}) {
+  if (paging.totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <nav className="mt-4 flex flex-col gap-3 rounded-3xl bg-white p-4 text-sm font-bold text-zinc-700 shadow-sm ring-1 ring-zinc-950/5 sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        Page {paging.page} of {paging.totalPages}
+        <span className="font-semibold text-zinc-500"> · {paging.total} total</span>
+      </p>
+      <div className="flex gap-2">
+        {paging.page > 1 ? (
+          <Link
+            href={groupDetailHref(groupId, pages, param, paging.page - 1)}
+            className="rounded-full border border-zinc-200 px-4 py-2 text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50"
+          >
+            Previous
+          </Link>
+        ) : (
+          <span className="rounded-full border border-zinc-100 px-4 py-2 text-zinc-300">Previous</span>
+        )}
+        {paging.page < paging.totalPages ? (
+          <Link
+            href={groupDetailHref(groupId, pages, param, paging.page + 1)}
+            className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800"
+          >
+            Next
+          </Link>
+        ) : (
+          <span className="rounded-full bg-zinc-100 px-4 py-2 text-zinc-300">Next</span>
+        )}
+      </div>
+    </nav>
   );
 }
 
@@ -213,8 +301,10 @@ function AnnouncementList({ group }: { group: GroupDetailData }) {
 
 export default async function GroupDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<GroupDetailSearchParams>;
 }) {
   const user = await getCurrentUser();
 
@@ -229,7 +319,17 @@ export default async function GroupDetailPage({
     notFound();
   }
 
-  const result = await getGroupDetailForUser(groupId, user);
+  const resolvedSearchParams = await searchParams;
+  const pages = {
+    playersPage: parsePositivePage(resolvedSearchParams.playersPage),
+    membersPage: parsePositivePage(resolvedSearchParams.membersPage),
+    announcementsPage: parsePositivePage(resolvedSearchParams.announcementsPage),
+    sessionsPage: parsePositivePage(resolvedSearchParams.sessionsPage),
+  };
+  const result = await getGroupDetailPageForUser(groupId, user, {
+    ...pages,
+    pageSize: 12,
+  });
 
   if (result.status === "not-found") {
     notFound();
@@ -414,6 +514,7 @@ export default async function GroupDetailPage({
               <EmptyState title="No players listed" description="No player memberships are connected to this group yet." />
             )}
           </div>
+          <SublistPagination groupId={group.id} param="playersPage" pages={pages} paging={group.paging.players} />
         </div>
 
         <div>
@@ -437,6 +538,7 @@ export default async function GroupDetailPage({
               <EmptyState title="No members listed" description="No direct user memberships are connected to this group yet." />
             )}
           </div>
+          <SublistPagination groupId={group.id} param="membersPage" pages={pages} paging={group.paging.members} />
         </div>
       </section>
 
@@ -460,6 +562,12 @@ export default async function GroupDetailPage({
         <div className="mt-5">
           <AnnouncementList group={group} />
         </div>
+        <SublistPagination
+          groupId={group.id}
+          param="announcementsPage"
+          pages={pages}
+          paging={group.paging.announcements}
+        />
       </section>
 
       <section className="mt-10">
@@ -482,6 +590,7 @@ export default async function GroupDetailPage({
         <div className="mt-5">
           <SessionList group={group} />
         </div>
+        <SublistPagination groupId={group.id} param="sessionsPage" pages={pages} paging={group.paging.sessions} />
       </section>
     </div>
   );

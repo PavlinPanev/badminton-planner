@@ -324,12 +324,6 @@ export async function getDashboardSessions(user: AuthUser, options?: DashboardSe
 }
 
 export async function getSessionDetailForUser(sessionId: number, user: AuthUser) {
-  const groupIds = await getAccessibleGroupIds(user);
-
-  if (!groupIds.length) {
-    return { status: "forbidden" as const, session: null };
-  }
-
   const [row] = await db
     .select({
       id: sessions.id,
@@ -353,8 +347,12 @@ export async function getSessionDetailForUser(sessionId: number, user: AuthUser)
     return { status: "not-found" as const, session: null };
   }
 
-  if (!groupIds.includes(row.groupId)) {
-    return { status: "forbidden" as const, session: null };
+  if (user.role !== "admin") {
+    const groupIds = await getAccessibleGroupIds(user);
+
+    if (!groupIds.includes(row.groupId)) {
+      return { status: "forbidden" as const, session: null };
+    }
   }
 
   const canViewAllAttendance = await canManageSession(sessionId, user);
@@ -463,6 +461,10 @@ export async function getSessionGroupForUser(sessionId: number, user: AuthUser) 
 
   if (!session) {
     return null;
+  }
+
+  if (user.role === "admin") {
+    return session;
   }
 
   const groupIds = await getAccessibleGroupIds(user);
