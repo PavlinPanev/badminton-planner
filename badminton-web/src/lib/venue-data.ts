@@ -1,6 +1,5 @@
 import { and, asc, count, eq, isNull } from "drizzle-orm";
 
-import type { AuthUser } from "@/auth/token";
 import { db, events, groups, sessions, venues } from "@/db";
 import { canManageVenues } from "./permissions";
 

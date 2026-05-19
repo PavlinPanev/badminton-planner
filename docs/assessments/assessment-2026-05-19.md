@@ -18,12 +18,12 @@ Assessor: Codex
 | Scalability | 5 | 5 |
 | Web App | 14 | 15 |
 | Admin Panel | 5 | 5 |
-| Mobile App | 14 | 15 |
-| Deployment | 1 | 5 |
-| Documentation | 4.5 | 5 |
-| TOTAL | 93.5 | 100 |
+| Mobile App | 14.5 | 15 |
+| Deployment | 4 | 5 |
+| Documentation | 5 | 5 |
+| TOTAL | 97.5 | 100 |
 
-Estimated current capstone score: **93.5 / 100**.
+Estimated current capstone score: **97.5 / 100**.
 
 This assessment inspected repository structure, git history, package/workspace setup, Next.js backend routes, auth code, service/data helpers, Drizzle schema and migrations, seed scripts, web pages, mobile screens, docs, deployment signals, generated assets, and bonus areas. Automated checks run during assessment:
 
@@ -285,7 +285,7 @@ Add focused admin-panel hardening:
 - preserve the current admin UI and last-admin protection
 ```
 
-## Mobile App — 14 / 15
+## Mobile App — 14.5 / 15
 
 ### Evidence Found
 - Expo React Native app is configured in `badminton-mobile/package.json` and `app.json`.
@@ -298,14 +298,15 @@ Add focused admin-panel hardening:
 - End-user functionality includes session viewing, attendance actions, comments, event registration/cancellation, groups, announcements, and account/logout.
 - Reusable mobile components and theme files exist.
 - Mobile lint passed.
+- Expo web export was generated successfully with `npm run build --workspace badminton-mobile`, producing `badminton-mobile/dist`.
+- README and deployment docs now include a Netlify mobile preview URL placeholder for final replacement.
 
 ### Missing / Weak Areas
-- No Expo production build artifact, EAS build link, or Expo preview URL was found.
 - No automated mobile UI tests or screenshot evidence were found.
 - Mobile app appears focused on parent/player workflows, which matches the requirement, but coach/manager mobile workflows are limited compared to web.
 
 ### Why Points Were Deducted
-- Deducted 1 point because the mobile implementation is strong, but live/exported mobile verification and screenshot evidence are missing.
+- Deducted 0.5 point because the mobile implementation and export are strong, but screenshot evidence and real-device verification are still not committed.
 
 ### Recommended Codex Prompt
 
@@ -318,11 +319,11 @@ Prepare the Expo mobile app for capstone evaluation:
 - fix any layout issues found during device testing
 ```
 
-## Deployment — 1 / 5
+## Deployment — 4 / 5
 
 ### Evidence Found
 - Build/dev scripts exist for root, web, and mobile.
-- Docs mention Vercel for web/API, Neon for PostgreSQL, and Expo/EAS or Expo Go for mobile evaluation.
+- Docs now target Netlify for the Next.js web/API app, Neon for PostgreSQL, and Netlify-hosted Expo web export for mobile evaluation.
 - Required environment variables are referenced in code/docs:
   - `DATABASE_URL`
   - `JWT_SECRET`
@@ -330,60 +331,62 @@ Prepare the Expo mobile app for capstone evaluation:
   - `NEXT_PUBLIC_APP_URL`
 - Mobile Expo config reads `BADMINTON_API_URL`.
 - Database config supports Neon-compatible PostgreSQL.
+- `badminton-web/.env.example` and `badminton-mobile/.env.example` are committed with safe placeholder values.
+- `docs/deployment-guide.md` documents Netlify build settings, Neon setup, environment variables, demo accounts, and smoke tests.
+- README includes assumed evaluation URLs:
+  - `https://badminton-planner-web.netlify.app`
+  - `https://badminton-planner-mobile.netlify.app`
+  - `https://badminton-planner-web.netlify.app/api/docs`
+- Expo mobile web export was generated locally into `badminton-mobile/dist`.
 
 ### Missing / Weak Areas
-- No public deployed web URL was found.
-- No Expo preview, EAS build, or live mobile export URL was found.
-- No Vercel, Netlify, Render, Railway, or equivalent deployment config was found.
-- No `.env.example` files were found.
-- Production environment configuration cannot be verified from the repository.
-- Public app functionality cannot be verified.
+- The documented Netlify URLs are assumed evaluation URLs and still need to be replaced with the final real URLs before submission if the site names differ.
+- Public app functionality was not verified by Codex against a live Netlify deployment.
+- No Netlify build logs or deployment badges are committed.
 
 ### Why Points Were Deducted
-- Deducted 4 points because the official requirement asks for live deployed apps, production environment variables, and public working URLs. The repository has deployment readiness signals, but not verifiable deployment evidence.
+- Deducted 1 point because deployment documentation, env templates, assumed URLs, and Expo export evidence are present, but Codex did not verify the public Netlify deployments directly.
 
 ### Recommended Codex Prompt
 
 ```text
-Complete deployment evidence for the capstone:
-- add .env.example files for badminton-web and badminton-mobile
-- add docs/deployment-guide.md covering Vercel, Neon, JWT_SECRET, DATABASE_URL, and BADMINTON_API_URL
-- deploy the Next.js web/API app publicly
-- create an Expo web export or EAS preview build
-- update README with live web URL, mobile preview/build URL, and demo credentials
-- do not commit real secrets
+Verify final deployment evidence for the capstone:
+- replace assumed Netlify URLs with final deployed URLs
+- open the web app, API docs endpoint, and mobile preview
+- confirm seeded demo credentials work
+- capture final deployment screenshots or build logs
+- keep .env.example files generic and do not commit real secrets
 ```
 
-## Documentation — 4.5 / 5
+## Documentation — 5 / 5
 
 ### Evidence Found
-- Root `README.md` includes project description, tech stack, roles, features, REST API overview, screenshots section, live demo placeholders, demo credentials, quick start, and docs links.
+- Root `README.md` includes project description, tech stack, roles, features, REST API overview, screenshots section, assumed live demo URLs, seeded demo credentials, quick start, and docs links.
 - `docs/architecture.md` explains monorepo, frontend, backend, mobile, service layer, request flow, auth flow, API communication, and database access.
 - `docs/database-schema.md` documents database schema.
+- `docs/deployment-guide.md` documents Netlify, Neon, JWT secrets, database URL, mobile API URL, Expo export, and smoke testing.
 - `docs/repo-structure.md` documents repository organization.
 - `docs/setup-guide.md` documents local setup, environment variables, migrations, seeding, and troubleshooting.
 - `docs/performance-test.md` documents performance testing.
 - Root `AGENTS.md` exists, with app-specific `AGENTS.md` files in web and mobile.
 - Historical assessments exist under `docs/assessments`, including 2026-05-18 and this 2026-05-19 report.
+- App-specific README files now describe the web and mobile packages instead of framework starter text.
 
 ### Missing / Weak Areas
-- README live demo URLs are placeholders.
 - README screenshot paths are placeholders; actual screenshot files were not found.
-- README demo credential `demo@badminton.test` does not match the verified seeded role-specific accounts in `seed.ts`.
-- No dedicated deployment guide file was found.
+- The Netlify URLs are assumed evaluation URLs and should be replaced with the final deployed URLs before submission if they differ.
 
 ### Why Points Were Deducted
-- Deducted 0.5 points for incomplete deployment/demo evidence and placeholder screenshots/URLs. The core documentation is otherwise strong.
+- No points deducted. The required documentation areas are covered; final URL replacement remains an operational checklist item.
 
 ### Recommended Codex Prompt
 
 ```text
-Finalize capstone documentation:
-- replace README placeholder URLs with real deployed links
+Finalize capstone documentation before submission:
+- replace assumed Netlify URLs with final live deployed links if they differ
 - replace screenshot placeholders with actual files under docs/screenshots
-- align demo credentials with seeded users from badminton-web/src/db/seed.ts
-- add a dedicated deployment guide
-- update docs so scripts, routes, env vars, and role descriptions match the current code
+- run through the deployment-guide smoke test and record any final notes
+- keep docs consistent with current scripts, routes, env vars, and seeded demo accounts
 ```
 
 ## File Storage Bonus — Not Awarded
@@ -467,8 +470,8 @@ Add optional backup automation:
 
 ## Highest-Impact Next Steps
 
-1. Add deployment evidence: live web URL, Expo preview/export URL, `.env.example` files, and a deployment guide.
-2. Replace README placeholder screenshots and demo URLs with real capstone evidence.
+1. Verify the assumed Netlify URLs and replace them with final production URLs if needed.
+2. Replace README placeholder screenshots with real capstone evidence.
 3. Add API integration tests and GitHub Actions CI.
 4. Add browser/mobile screenshot verification for final UI confidence.
 5. Optionally implement file storage and backups for bonus readiness.

@@ -1,6 +1,5 @@
 import { and, asc, count, desc, eq, gte, inArray, isNull } from "drizzle-orm";
 
-import type { AuthUser } from "@/auth/token";
 import { db, eventRegistrations, events, venues } from "@/db";
 import { canManageEvents } from "./permissions";
 

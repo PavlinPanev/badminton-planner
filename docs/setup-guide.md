@@ -36,7 +36,10 @@ The root workspace installs dependencies for:
 
 ## 4. Environment Variables
 
-Create local environment files for the web and mobile apps.
+Create local environment files for the web and mobile apps. Template files are committed at:
+
+- `badminton-web/.env.example`
+- `badminton-mobile/.env.example`
 
 ### Web App
 
@@ -103,7 +106,7 @@ The seed script creates fictional users, players, venues, groups, sessions, atte
 
 ## 6. Run Web App
 
-Preferred course command:
+Root convenience command:
 
 ```bash
 npm run dev:web
@@ -123,7 +126,7 @@ http://localhost:3000
 
 ## 7. Run Mobile App
 
-Preferred course command:
+Root convenience command:
 
 ```bash
 npm run dev:mobile
@@ -154,7 +157,14 @@ The root command uses `concurrently` to run both app workspaces.
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Run web and mobile development servers together. |
+| `npm run dev:web` | Run the Next.js web app and API. |
+| `npm run dev:mobile` | Run the Expo mobile app. |
 | `npm run build` | Build all workspaces that define a build script. |
+| `npm run build:web` | Build the Next.js web app. |
+| `npm run build:mobile` | Export the Expo app for web/static hosting. |
+| `npm run lint:web` | Lint the web app. |
+| `npm run lint:mobile` | Lint the mobile app. |
+| `npm run test:web` | Run web unit tests. |
 | `npm run dev --workspace badminton-web` | Run the Next.js web app and API. |
 | `npm run dev --workspace badminton-mobile` | Run the Expo mobile app. |
 | `npm run lint --workspace badminton-web` | Lint the web app. |
@@ -162,16 +172,38 @@ The root command uses `concurrently` to run both app workspaces.
 | `npm run db:generate --workspace badminton-web` | Generate Drizzle migrations. |
 | `npm run db:migrate --workspace badminton-web` | Apply database migrations. |
 | `npm run db:seed --workspace badminton-web` | Seed demo data. |
+| `npm run db:seed:performance` | Seed a large non-production performance dataset. |
+| `npm run test:performance` | Run the performance smoke-check script. |
 
 ## 10. Demo Credentials
 
-| Email | Password |
+All seeded demo accounts use password `pass123`.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@badminton.test` | `pass123` |
+| Manager | `desislava.ivanova@badminton.test` | `pass123` |
+| Coach | `georgi.stoyanov@badminton.test` | `pass123` |
+| Coach | `petar.kolev@badminton.test` | `pass123` |
+| Parent | `elena.dimitrova@badminton.test` | `pass123` |
+| Parent | `ivan.mihaylov@badminton.test` | `pass123` |
+| Parent | `silvia.vasileva@badminton.test` | `pass123` |
+
+## 11. Deployment
+
+The capstone deployment uses Netlify for the web/API app, Neon PostgreSQL for the database, and a Netlify-hosted Expo web export for mobile evaluation.
+
+Evaluation URLs:
+
+| Resource | URL |
 | --- | --- |
-| `demo@badminton.test` | `pass123` |
+| Web App and REST API | `https://badminton-planner-web.netlify.app` |
+| Mobile Web Preview | `https://badminton-planner-mobile.netlify.app` |
+| API Docs Endpoint | `https://badminton-planner-web.netlify.app/api/docs` |
 
-Seeded development databases may include additional role-specific accounts for admin, manager, coach, and parent testing.
+See the dedicated [deployment guide](deployment-guide.md) for Netlify build settings, Neon setup, environment variables, and the final submission checklist.
 
-## 11. Common Problems
+## 12. Common Problems
 
 ### Database Connection Issues
 
@@ -234,13 +266,13 @@ Checklist:
 - Restart Expo after editing `badminton-mobile/.env`.
 - Verify the API from the phone browser: `http://<your-lan-ip>:3000/api/docs`.
 
-## 12. Evaluation Notes
+## 13. Evaluation Notes
 
 For capstone evaluation, the recommended flow is:
 
 1. Run migrations and seed data.
-2. Start the web app.
-3. Log in with demo credentials.
+2. Start the web app or open the deployed Netlify web URL.
+3. Log in with a seeded role-specific demo account.
 4. Review dashboard, groups, sessions, attendance, comments, venues, and events.
-5. Start the mobile app with `BADMINTON_API_URL` pointing to the running API.
+5. Start the mobile app or open the deployed mobile preview with `BADMINTON_API_URL` pointing to the running API.
 6. Test session viewing, attendance, comments, announcements, and event registration from mobile.

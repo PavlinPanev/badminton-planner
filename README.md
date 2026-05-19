@@ -92,7 +92,7 @@ The seeded database contains generated demonstration data for safe evaluation an
 | ORM | Drizzle ORM and Drizzle Kit migrations |
 | Mobile | Expo, React Native, Expo Router |
 | Authentication | JWT Bearer tokens, secure cookies/session helpers, bcrypt password hashing |
-| Deployment | Vercel for web/API, Neon for PostgreSQL, Expo/EAS or Expo Go for mobile evaluation |
+| Deployment | Netlify for web/API and Expo web preview, Neon for PostgreSQL |
 
 ## Screenshots
 
@@ -112,17 +112,26 @@ The seeded database contains generated demonstration data for safe evaluation an
 
 | Resource | URL |
 | --- | --- |
-| Web App | _Add deployed web URL_ |
-| Mobile App | _Add Expo preview or build URL_ |
-| GitHub Repository | _Add repository URL_ |
+| Web App and REST API | https://badminton-planner-web.netlify.app |
+| Mobile App Preview | https://badminton-planner-mobile.netlify.app |
+| API Docs | https://badminton-planner-web.netlify.app/api/docs |
+| GitHub Repository | https://github.com/Pavlin-Panev/badminton-planner |
+
+The Netlify URLs above are capstone evaluation URLs. Replace them with the final deployed URLs before submission if the site names change.
 
 ## Demo Credentials
 
-| Email | Password |
-| --- | --- |
-| `demo@badminton.test` | `pass123` |
+All seeded demo accounts use password `pass123`.
 
-Generated seed data may also provide additional role-specific accounts for admin, manager, coach, and parent testing.
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@badminton.test` | `pass123` |
+| Manager | `desislava.ivanova@badminton.test` | `pass123` |
+| Coach | `georgi.stoyanov@badminton.test` | `pass123` |
+| Coach | `petar.kolev@badminton.test` | `pass123` |
+| Parent | `elena.dimitrova@badminton.test` | `pass123` |
+| Parent | `ivan.mihaylov@badminton.test` | `pass123` |
+| Parent | `silvia.vasileva@badminton.test` | `pass123` |
 
 ## Quick Start
 
@@ -131,12 +140,13 @@ npm install
 npm run dev
 ```
 
-For database configuration, migrations, seeding, and mobile networking setup, follow the full [local setup guide](docs/setup-guide.md).
+For database configuration, migrations, seeding, deployment, and mobile networking setup, follow the full [local setup guide](docs/setup-guide.md) and [deployment guide](docs/deployment-guide.md).
 
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [Database Schema](docs/database-schema.md)
+- [Deployment Guide](docs/deployment-guide.md)
 - [Performance Test](docs/performance-test.md)
 - [Repository Structure](docs/repo-structure.md)
 - [Setup Guide](docs/setup-guide.md)

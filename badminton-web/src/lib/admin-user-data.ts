@@ -2,7 +2,6 @@ import "server-only";
 
 import { asc, count, desc, eq } from "drizzle-orm";
 
-import type { AuthUser } from "@/auth/token";
 import { db, users } from "@/db";
 import { canManageUsers } from "./permissions";
 

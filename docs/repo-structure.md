@@ -45,6 +45,7 @@ badminton-club-planner/
 ├── docs/
 │   ├── architecture.md
 │   ├── database-schema.md
+│   ├── deployment-guide.md
 │   ├── repo-structure.md
 │   └── setup-guide.md
 ├── scripts/
@@ -72,7 +73,8 @@ The root `package.json` configures npm workspaces for:
 {
   "workspaces": [
     "badminton-web",
-    "badminton-mobile"
+    "badminton-mobile",
+    "badminton-shared"
   ]
 }
 ```
@@ -105,6 +107,7 @@ The `badminton-web` package contains the Next.js web application and backend.
 | `src/db` | Drizzle schema, database client, and seed script. |
 | `src/lib` | Domain data helpers for groups, sessions, venues, events, and session status. |
 | `drizzle.config.ts` | Drizzle Kit configuration for migrations. |
+| `.env.example` | Example web/backend environment variables for local and Netlify setup. |
 | `package.json` | Next.js, Drizzle, lint, build, and database scripts. |
 
 ### `src/app`
@@ -112,6 +115,8 @@ The `badminton-web` package contains the Next.js web application and backend.
 `src/app` uses the Next.js App Router and contains web routes for:
 
 - Dashboard
+- Profile/settings
+- Admin dashboard and user management
 - Groups
 - Group members
 - Group announcements
@@ -151,6 +156,7 @@ Protected endpoints should validate Bearer tokens and enforce authorization serv
 | `schema.ts` | Drizzle table definitions, enums, indexes, constraints, and relations. |
 | `index.ts` | Neon connection and typed Drizzle database export. |
 | `seed.ts` | Generated demo data for users, players, venues, groups, sessions, attendance, comments, events, announcements, and invitations. |
+| `seed-performance.ts` | Large non-production performance dataset seed for scalability checks. |
 
 ### `src/lib`
 
@@ -166,7 +172,7 @@ The `badminton-mobile` package contains the Expo React Native app.
 
 | Path | Purpose |
 | --- | --- |
-| `src/app` | Expo Router screens for login, registration, sessions, session details, announcements, and events. |
+| `src/app` | Expo Router screens for login, registration, home, groups, group details, sessions, session details, announcements, events, event details, and account. |
 | `src/auth` | Auth context and token storage. |
 | `src/components` | Mobile cards and UI primitives. |
 | `src/lib/api.ts` | API base URL helper and API error handling. |
@@ -174,6 +180,7 @@ The `badminton-mobile` package contains the Expo React Native app.
 | `src/assets` | App icons, splash images, and other bundled assets. |
 | `app.config.js` | Reads `BADMINTON_API_URL` and exposes it to the Expo runtime. |
 | `app.json` | Expo app metadata. |
+| `.env.example` | Example mobile API URL configuration. |
 
 ## `badminton-shared/`
 
@@ -193,6 +200,7 @@ Shared code should avoid importing web-only or mobile-only dependencies.
 | --- | --- |
 | `architecture.md` | System design, communication flows, and Mermaid diagrams. |
 | `database-schema.md` | Database tables, relationships, ERD, indexes, and constraints. |
+| `deployment-guide.md` | Netlify, Neon, environment variable, and mobile export deployment guide. |
 | `repo-structure.md` | Monorepo layout and folder responsibilities. |
 | `setup-guide.md` | Local development setup, environment variables, database setup, and troubleshooting. |
 
