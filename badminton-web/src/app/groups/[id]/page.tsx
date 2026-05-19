@@ -18,6 +18,7 @@ import { StateBadge } from "@/components/session-badges";
 import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
 import { getGroupAgeLabel, getGroupDetailForUser, type GroupDetailData } from "@/lib/group-data";
 import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
+import { InviteLinkPanel } from "../invite-link-panel";
 
 function StatPill({ label, value }: { label: string; value: string | number }) {
   return (
@@ -300,6 +301,17 @@ export default async function GroupDetailPage({
           </div>
         </Card>
       </section>
+
+      {group.canManage ? (
+        <section className="mt-10">
+          <SectionHeader
+            eyebrow="Manager tools"
+            title="Invite Members"
+            description="Create a one-person invite link for this training group."
+          />
+          <InviteLinkPanel groupId={group.id} />
+        </section>
+      ) : null}
 
       <section className="mt-10 grid gap-5 lg:grid-cols-2">
         <div>

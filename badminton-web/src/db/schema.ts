@@ -139,6 +139,25 @@ export const groupMembers = pgTable(
   ],
 );
 
+export const groupInvitations = pgTable(
+  "group_invitations",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    inviteCode: varchar("invite_code", { length: 96 }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("group_invitations_invite_code_idx").on(table.inviteCode),
+    index("group_invitations_group_id_idx").on(table.groupId),
+    index("group_invitations_user_id_idx").on(table.userId),
+  ],
+);
+
 export const sessions = pgTable(
   "sessions",
   {
@@ -258,6 +277,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   players: many(players),
   coachedSessions: many(sessions),
   groupMemberships: many(groupMembers),
+  groupInvitations: many(groupInvitations),
   attendanceMarks: many(sessionAttendance),
   sessionComments: many(sessionComments),
   eventRegistrations: many(eventRegistrations),
@@ -285,6 +305,7 @@ export const groupsRelations = relations(groups, ({ one, many }) => ({
     references: [venues.id],
   }),
   members: many(groupMembers),
+  invitations: many(groupInvitations),
   sessions: many(sessions),
 }));
 
@@ -300,6 +321,17 @@ export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
   player: one(players, {
     fields: [groupMembers.playerId],
     references: [players.id],
+  }),
+}));
+
+export const groupInvitationsRelations = relations(groupInvitations, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupInvitations.groupId],
+    references: [groups.id],
+  }),
+  user: one(users, {
+    fields: [groupInvitations.userId],
+    references: [users.id],
   }),
 }));
 
