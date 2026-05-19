@@ -14,3 +14,8 @@
  GET /dashboard 200 in 6.4s (next.js: 2.7s, proxy.ts: 81ms, application-code: 3.6s)
  GET /api/events?page=1&pageSize=50 200 in 5.0s (next.js: 3.4s, proxy.ts: 23ms, application-code: 1602ms)
  GET /api/sessions?page=1&pageSize=50 200 in 5.4s (next.js: 3.4s, proxy.ts: 22ms, application-code: 1979ms)
+ GET /groups 200 in 4.1s (next.js: 3.0s, proxy.ts: 46ms, application-code: 1058ms)
+ GET /api/events?page=1&pageSize=50 200 in 3.0s (next.js: 2.6s, proxy.ts: 26ms, application-code: 376ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 4.6s (next.js: 2.6s, proxy.ts: 26ms, application-code: 1950ms)
+ GET /api/sessions?page=1&pageSize=10 200 in 578ms (next.js: 12ms, proxy.ts: 13ms, application-code: 553ms)
+ GET /api/announcements?page=1&pageSize=10 200 in 2.5s (next.js: 1971ms, proxy.ts: 16ms, application-code: 492ms)
