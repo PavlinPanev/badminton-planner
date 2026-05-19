@@ -1,0 +1,291 @@
+import Link from "next/link";
+import {
+  GraduationCap,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  Trophy,
+  UserRoundCheck,
+  UsersRound,
+} from "lucide-react";
+import { notFound, redirect } from "next/navigation";
+
+import { getCurrentUser } from "@/auth/session";
+import { StateBadge } from "@/components/session-badges";
+import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
+import { getGroupAgeLabel, getGroupDetailForUser, type GroupDetailData } from "@/lib/group-data";
+import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
+
+function StatPill({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl bg-white/15 p-4 ring-1 ring-white/20">
+      <dt className="text-xs font-black uppercase tracking-wide text-lime-100">{label}</dt>
+      <dd className="mt-1 text-sm font-bold text-white">{value}</dd>
+    </div>
+  );
+}
+
+function PersonRow({
+  name,
+  detail,
+  role,
+  icon: Icon,
+}: {
+  name: string;
+  detail: string;
+  role: string;
+  icon: typeof UsersRound;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-zinc-50 p-4">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-lime-200 to-emerald-300 text-emerald-950">
+        <Icon aria-hidden="true" className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-black text-zinc-950">{name}</p>
+        <p className="mt-1 truncate text-xs font-semibold text-zinc-600">{detail}</p>
+      </div>
+      <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-900 ring-1 ring-violet-200">
+        {role}
+      </span>
+    </div>
+  );
+}
+
+function SessionList({ group }: { group: GroupDetailData }) {
+  if (!group.sessions.length) {
+    return <EmptyState title="No sessions yet" description="This group does not have scheduled sessions yet." />;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+      <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-200 bg-gradient-to-r from-lime-50 to-sky-50 px-5 py-4 text-xs font-black uppercase tracking-wide text-zinc-600 md:grid-cols-[1fr_120px_160px_120px]">
+        <span>Session</span>
+        <span>Status</span>
+        <span className="hidden md:block">Venue</span>
+        <span className="hidden md:block">Capacity</span>
+      </div>
+      {group.sessions.map((session) => (
+        <Link
+          key={session.id}
+          href={`/sessions/${session.id}`}
+          className="grid grid-cols-[1fr_auto] gap-3 border-b border-zinc-100 px-5 py-4 text-sm transition last:border-b-0 hover:bg-emerald-50/60 md:grid-cols-[1fr_120px_160px_120px]"
+        >
+          <div>
+            <p className="font-black text-zinc-950">
+              {formatSessionDate(session.sessionDate)} at {formatSessionTime(session.startTime)}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-zinc-600">Coach: {session.coachName ?? "Not assigned"}</p>
+          </div>
+          <div className="flex items-start">
+            {session.canceled ? (
+              <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-900 ring-1 ring-rose-200">
+                canceled
+              </span>
+            ) : (
+              <StateBadge state={session.state} />
+            )}
+          </div>
+          <span className="hidden font-semibold text-zinc-700 md:block">{session.venueName}</span>
+          <span className="hidden font-semibold text-zinc-700 md:block">{session.capacity ?? "Open"}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export default async function GroupDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login?next=/groups");
+  }
+
+  const { id } = await params;
+  const groupId = Number(id);
+
+  if (!Number.isInteger(groupId)) {
+    notFound();
+  }
+
+  const result = await getGroupDetailForUser(groupId, user);
+
+  if (result.status === "not-found") {
+    notFound();
+  }
+
+  if (result.status === "forbidden") {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <Link href="/groups" className="text-sm font-black text-emerald-700 hover:text-emerald-900">
+          Back to groups
+        </Link>
+        <section className="mt-6 rounded-3xl border border-rose-200 bg-white p-6 shadow-lg">
+          <h1 className="text-2xl font-black text-zinc-950">Group unavailable</h1>
+          <p className="mt-3 text-sm leading-6 text-zinc-700">
+            You can only view groups connected to your account or linked players.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  const group = result.group;
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link href="/groups" className="text-sm font-black text-emerald-700 hover:text-emerald-900">
+        Back to groups
+      </Link>
+
+      <section className="relative mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-sky-500 to-emerald-500 p-6 text-white shadow-[0_24px_70px_rgba(59,130,246,0.25)] sm:p-8">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(135deg,rgba(255,255,255,0.18)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.18)_50%,rgba(255,255,255,0.18)_75%,transparent_75%)] bg-[length:34px_34px] opacity-25" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="inline-flex rounded-full bg-white/20 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-lime-100 ring-1 ring-white/30">
+              Group details
+            </p>
+            <h1 className="mt-4 text-3xl font-black tracking-normal sm:text-5xl">{group.title}</h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-white/90">
+              {group.description ?? "Training group for club sessions, attendance, and member coordination."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-white/90">
+              <span className="inline-flex items-center gap-2">
+                <Trophy aria-hidden="true" className="h-4 w-4" />
+                {group.level}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <UsersRound aria-hidden="true" className="h-4 w-4" />
+                ages {getGroupAgeLabel(group)}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin aria-hidden="true" className="h-4 w-4" />
+                {group.venueName}, {group.venueCity}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            {group.roles.map((role) => (
+              <span
+                key={role}
+                className="inline-flex items-center gap-2 rounded-full bg-lime-100 px-3 py-1 text-xs font-black text-lime-950 ring-1 ring-lime-200"
+              >
+                <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                {role}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <dl className="relative mt-8 grid gap-4 rounded-3xl bg-white/15 p-4 ring-1 ring-white/25 backdrop-blur sm:grid-cols-2 lg:grid-cols-4">
+          <StatPill label="Players" value={group.playerCount} />
+          <StatPill label="Members" value={group.memberCount} />
+          <StatPill label="Sessions" value={group.sessionCount} />
+          <StatPill label="Venue" value={group.venueCity} />
+        </dl>
+      </section>
+
+      <section className="mt-10 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <Card className="p-6">
+          <SectionHeader
+            eyebrow="Home court"
+            title="Venue"
+            description="The regular location used by this group for training and coordination."
+          />
+          <div className="mt-5 rounded-3xl bg-gradient-to-br from-emerald-50 to-sky-50 p-5">
+            <p className="inline-flex items-center gap-2 text-lg font-black text-zinc-950">
+              <MapPin aria-hidden="true" className="h-5 w-5 text-emerald-700" />
+              {group.venueName}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-zinc-700">{group.venueAddress}</p>
+            {group.venueDescription ? (
+              <p className="mt-3 text-sm leading-6 text-zinc-600">{group.venueDescription}</p>
+            ) : null}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <SectionHeader
+            eyebrow="Coaching"
+            title="Coaches"
+            description="Coaches and managers connected to this group."
+          />
+          <div className="mt-5 space-y-3">
+            {group.coaches.length ? (
+              group.coaches.map((coach) => (
+                <PersonRow
+                  key={`${coach.role}-${coach.id}`}
+                  name={coach.name}
+                  detail={coach.email}
+                  role={coach.role}
+                  icon={UserRoundCheck}
+                />
+              ))
+            ) : (
+              <EmptyState title="No coaches listed" description="No coach membership is connected to this group yet." />
+            )}
+          </div>
+        </Card>
+      </section>
+
+      <section className="mt-10 grid gap-5 lg:grid-cols-2">
+        <div>
+          <SectionHeader eyebrow="Roster" title="Players" description="Players currently connected to this group." />
+          <div className="mt-5 space-y-3">
+            {group.players.length ? (
+              group.players.map((player) => (
+                <PersonRow
+                  key={player.id}
+                  name={player.name}
+                  detail={`Born ${player.birthYear} · Parent: ${player.parentName}`}
+                  role={player.skillLevel}
+                  icon={GraduationCap}
+                />
+              ))
+            ) : (
+              <EmptyState title="No players listed" description="No player memberships are connected to this group yet." />
+            )}
+          </div>
+        </div>
+
+        <div>
+          <SectionHeader
+            eyebrow="Club people"
+            title="Members"
+            description="Direct user memberships for coaches, parents, and managers."
+          />
+          <div className="mt-5 space-y-3">
+            {group.members.length ? (
+              group.members.map((member) => (
+                <PersonRow
+                  key={`${member.role}-${member.id}`}
+                  name={member.name}
+                  detail={member.email || "No email available"}
+                  role={member.role}
+                  icon={Mail}
+                />
+              ))
+            ) : (
+              <EmptyState title="No members listed" description="No direct user memberships are connected to this group yet." />
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <SectionHeader
+          eyebrow="Schedule"
+          title="Group Sessions"
+          description="Recent and upcoming sessions connected to this group."
+        />
+        <div className="mt-5">
+          <SessionList group={group} />
+        </div>
+      </section>
+    </div>
+  );
+}

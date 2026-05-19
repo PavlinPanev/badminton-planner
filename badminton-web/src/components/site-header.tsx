@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, UserPlus } from "lucide-react";
+import { CalendarDays, Home, LayoutDashboard, LogIn, MapPin, UserPlus, UsersRound } from "lucide-react";
 
 import { logoutAction } from "@/auth/actions";
 import { getCurrentUser } from "@/auth/session";
@@ -73,10 +73,16 @@ export async function SiteHeader() {
 
         <nav className="hidden items-center gap-1 rounded-full border border-zinc-200/80 bg-white/80 p-1 text-sm font-medium text-zinc-700 shadow-sm md:flex">
           {user ? (
-            <NavLink href="/dashboard">
-              <LayoutDashboard aria-hidden="true" className="h-4 w-4" />
-              Dashboard
-            </NavLink>
+            <>
+              <NavLink href="/dashboard">
+                <LayoutDashboard aria-hidden="true" className="h-4 w-4" />
+                Dashboard
+              </NavLink>
+              <NavLink href="/groups">
+                <UsersRound aria-hidden="true" className="h-4 w-4" />
+                Groups
+              </NavLink>
+            </>
           ) : null}
           {publicNavItems.map((item) => (
             <NavLink key={item.href} href={item.href}>
@@ -93,10 +99,16 @@ export async function SiteHeader() {
           </summary>
           <nav className="absolute right-0 z-10 mt-3 flex w-72 flex-col gap-1 rounded-3xl border border-white/80 bg-white p-3 text-sm font-medium text-zinc-700 shadow-2xl">
             {user ? (
-              <NavLink href="/dashboard" compact>
-                <LayoutDashboard aria-hidden="true" className="h-4 w-4" />
-                Dashboard
-              </NavLink>
+              <>
+                <NavLink href="/dashboard" compact>
+                  <LayoutDashboard aria-hidden="true" className="h-4 w-4" />
+                  Dashboard
+                </NavLink>
+                <NavLink href="/groups" compact>
+                  <UsersRound aria-hidden="true" className="h-4 w-4" />
+                  Groups
+                </NavLink>
+              </>
             ) : null}
             {publicNavItems.map((item) => (
               <NavLink key={item.href} href={item.href} compact>
