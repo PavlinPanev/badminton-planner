@@ -211,6 +211,7 @@ function BottomNav() {
   const items = [
     { label: 'Home', icon: '⌂', href: '/' },
     { label: 'Sessions', icon: '◷', href: '/sessions' },
+    { label: 'Updates', icon: '*', href: '/announcements' },
     { label: 'Events', icon: '◇', href: '/events' },
   ];
 

@@ -33,6 +33,7 @@ function ProtectedStack() {
       <Stack.Screen name="register" options={{ title: 'Register' }} />
       <Stack.Screen name="sessions" options={{ title: 'Sessions' }} />
       <Stack.Screen name="session-details" options={{ title: 'Session Details' }} />
+      <Stack.Screen name="announcements" options={{ title: 'Announcements' }} />
       <Stack.Screen name="events" options={{ title: 'Events' }} />
       <Stack.Screen name="event-details" options={{ title: 'Event Details' }} />
     </Stack>

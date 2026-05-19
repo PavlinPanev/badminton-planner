@@ -159,6 +159,27 @@ export const groupInvitations = pgTable(
   ],
 );
 
+export const groupAnnouncements = pgTable(
+  "group_announcements",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    authorId: integer("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    title: varchar("title", { length: 255 }).notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("group_announcements_group_id_idx").on(table.groupId),
+    index("group_announcements_author_id_idx").on(table.authorId),
+  ],
+);
+
 export const sessions = pgTable(
   "sessions",
   {
@@ -279,6 +300,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   coachedSessions: many(sessions),
   groupMemberships: many(groupMembers),
   groupInvitations: many(groupInvitations),
+  groupAnnouncements: many(groupAnnouncements),
   attendanceMarks: many(sessionAttendance),
   sessionComments: many(sessionComments),
   eventRegistrations: many(eventRegistrations),
@@ -308,6 +330,7 @@ export const groupsRelations = relations(groups, ({ one, many }) => ({
   members: many(groupMembers),
   invitations: many(groupInvitations),
   sessions: many(sessions),
+  announcements: many(groupAnnouncements),
 }));
 
 export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
@@ -332,6 +355,17 @@ export const groupInvitationsRelations = relations(groupInvitations, ({ one }) =
   }),
   user: one(users, {
     fields: [groupInvitations.userId],
+    references: [users.id],
+  }),
+}));
+
+export const groupAnnouncementsRelations = relations(groupAnnouncements, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupAnnouncements.groupId],
+    references: [groups.id],
+  }),
+  author: one(users, {
+    fields: [groupAnnouncements.authorId],
     references: [users.id],
   }),
 }));

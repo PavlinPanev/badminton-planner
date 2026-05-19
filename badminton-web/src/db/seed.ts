@@ -6,6 +6,7 @@ import {
   db,
   eventRegistrations,
   events,
+  groupAnnouncements,
   groupMembers,
   groups,
   players,
@@ -94,6 +95,7 @@ async function cleanupSeedData() {
 
   if (existingGroups.length) {
     const groupIds = existingGroups.map((group) => group.id);
+    await db.delete(groupAnnouncements).where(inArray(groupAnnouncements.groupId, groupIds));
     await db.delete(groupMembers).where(inArray(groupMembers.groupId, groupIds));
     await db.delete(groups).where(inArray(groups.id, groupIds));
   }
@@ -507,8 +509,32 @@ async function main() {
     },
   ]);
 
+  const insertedAnnouncements = await db
+    .insert(groupAnnouncements)
+    .values([
+      {
+        groupId: groupByTitle.get("Sofia Beginners 6-9")!.id,
+        authorId: manager.id,
+        title: "Welcome to the new season!",
+        content: "We are excited to kick off the new training season with everyone. Don't forget to bring plenty of water and your indoor shoes.",
+      },
+      {
+        groupId: groupByTitle.get("Sofia Advanced Juniors")!.id,
+        authorId: coach2.id,
+        title: "New tournament dates announced",
+        content: "Please check the events tab to register for the upcoming regional tournament. Selection is first-come, first-served.",
+      },
+      {
+        groupId: groupByTitle.get("Social Badminton Adults")!.id,
+        authorId: coach2.id,
+        title: "Social Sunday session fully booked",
+        content: "This week's social session reached full capacity in record time! Please remember to mark yourself as absent if your plans change.",
+      },
+    ])
+    .returning();
+
   console.log(
-    `Seeded ${insertedUsers.length} users, ${insertedPlayers.length} players, ${insertedGroups.length} groups, ${insertedSessions.length} sessions, and ${insertedEvents.length} events.`,
+    `Seeded ${insertedUsers.length} users, ${insertedPlayers.length} players, ${insertedGroups.length} groups, ${insertedSessions.length} sessions, ${insertedEvents.length} events, and ${insertedAnnouncements.length} announcements.`,
   );
 }
 
