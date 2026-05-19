@@ -1,8 +1,8 @@
-import { and, eq, isNull } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 import { getApiUser, jsonError } from "@/auth/api";
-import { db, eventRegistrations } from "@/db";
+import { parseEventRegistrationBody, parseRequiredId } from "@/lib/api-validation";
+import { cancelEventRegistration } from "@/services/events-service";
 
 export async function POST(
   request: NextRequest,
@@ -15,40 +15,24 @@ export async function POST(
   }
 
   const { id } = await params;
-  const eventId = Number(id);
   const body = await request.json().catch(() => ({}));
-  const playerId = body?.playerId === undefined || body?.playerId === null ? null : Number(body.playerId);
+  const parsedId = parseRequiredId(id, "Event id must be a number.");
 
-  if (!Number.isInteger(eventId)) {
-    return jsonError("Event id must be a number.", 400);
+  if (!parsedId.success) {
+    return jsonError(parsedId.error, 400);
   }
 
-  if (playerId !== null && !Number.isInteger(playerId)) {
-    return jsonError("playerId must be a number when provided.", 400);
+  const parsedBody = parseEventRegistrationBody(body);
+
+  if (!parsedBody.success) {
+    return jsonError(parsedBody.error, 400);
   }
 
-  const existingWhere =
-    playerId === null
-      ? and(
-          eq(eventRegistrations.eventId, eventId),
-          eq(eventRegistrations.userId, auth.user.id),
-          isNull(eventRegistrations.playerId),
-        )
-      : and(
-          eq(eventRegistrations.eventId, eventId),
-          eq(eventRegistrations.userId, auth.user.id),
-          eq(eventRegistrations.playerId, playerId),
-        );
+  const result = await cancelEventRegistration(auth.user, parsedId.value, parsedBody.data.playerId);
 
-  const [registration] = await db
-    .update(eventRegistrations)
-    .set({ status: "canceled" })
-    .where(existingWhere)
-    .returning();
-
-  if (!registration) {
+  if (result.status === "not-found") {
     return jsonError("Registration not found.", 404);
   }
 
-  return Response.json({ data: registration });
+  return Response.json({ data: result.data });
 }

@@ -1,15 +1,8 @@
-import { count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { getApiUser, jsonError, paginationMeta, parsePage } from "@/auth/api";
-import { db, sessionComments, users } from "@/db";
-import { canManageSession, getSessionGroupForUser } from "@/lib/session-data";
-
-function readCommentText(value: unknown) {
-  return String(value ?? "")
-    .trim()
-    .slice(0, 1000);
-}
+import { getApiUser, jsonError, parsePage } from "@/auth/api";
+import { parseCommentBody, parseRequiredId } from "@/lib/api-validation";
+import { createSessionComment, listSessionComments } from "@/services/sessions-service";
 
 export async function GET(
   request: NextRequest,
@@ -22,46 +15,20 @@ export async function GET(
   }
 
   const { id } = await params;
-  const sessionId = Number(id);
+  const parsedId = parseRequiredId(id, "Session id must be a number.");
 
-  if (!Number.isInteger(sessionId)) {
-    return jsonError("Session id must be a number.", 400);
+  if (!parsedId.success) {
+    return jsonError(parsedId.error, 400);
   }
 
-  const session = await getSessionGroupForUser(sessionId, auth.user);
+  const { page, pageSize } = parsePage(request);
+  const result = await listSessionComments(auth.user, parsedId.value, { page, pageSize });
 
-  if (!session) {
+  if (result.status === "forbidden") {
     return jsonError("You are not a member of this session group.", 403);
   }
 
-  const { page, pageSize, offset } = parsePage(request);
-  const canManageComments = await canManageSession(sessionId, auth.user);
-  const [{ total: totalCount }] = await db
-    .select({ total: count() })
-    .from(sessionComments)
-    .where(eq(sessionComments.sessionId, sessionId));
-  const comments = await db
-    .select({
-      id: sessionComments.id,
-      userId: sessionComments.userId,
-      text: sessionComments.text,
-      commentedAt: sessionComments.commentedAt,
-      authorName: users.name,
-    })
-    .from(sessionComments)
-    .innerJoin(users, eq(sessionComments.userId, users.id))
-    .where(eq(sessionComments.sessionId, sessionId))
-    .orderBy(desc(sessionComments.commentedAt), desc(sessionComments.id))
-    .limit(pageSize)
-    .offset(offset);
-
-  return Response.json({
-    data: comments.map((comment) => ({
-      ...comment,
-      canEdit: comment.userId === auth.user.id || canManageComments,
-    })),
-    paging: paginationMeta(page, pageSize, totalCount),
-  });
+  return Response.json({ data: result.data, paging: result.paging });
 }
 
 export async function POST(
@@ -75,47 +42,24 @@ export async function POST(
   }
 
   const { id } = await params;
-  const sessionId = Number(id);
   const body = await request.json().catch(() => null);
-  const text = readCommentText(body?.text);
+  const parsedId = parseRequiredId(id, "Session id must be a number.");
 
-  if (!Number.isInteger(sessionId)) {
-    return jsonError("Session id must be a number.", 400);
+  if (!parsedId.success) {
+    return jsonError(parsedId.error, 400);
   }
 
-  if (!text) {
-    return jsonError("Comment text is required.", 400);
+  const parsedBody = parseCommentBody(body);
+
+  if (!parsedBody.success) {
+    return jsonError(parsedBody.error, 400);
   }
 
-  const session = await getSessionGroupForUser(sessionId, auth.user);
+  const result = await createSessionComment(auth.user, parsedId.value, parsedBody.data.text);
 
-  if (!session) {
+  if (result.status === "forbidden") {
     return jsonError("You are not a member of this session group.", 403);
   }
 
-  const [comment] = await db
-    .insert(sessionComments)
-    .values({
-      sessionId,
-      userId: auth.user.id,
-      text,
-      commentedAt: new Date(),
-    })
-    .returning({
-      id: sessionComments.id,
-      userId: sessionComments.userId,
-      text: sessionComments.text,
-      commentedAt: sessionComments.commentedAt,
-    });
-
-  return Response.json(
-    {
-      data: {
-        ...comment,
-        authorName: auth.user.name,
-        canEdit: true,
-      },
-    },
-    { status: 201 },
-  );
+  return Response.json({ data: result.data }, { status: 201 });
 }

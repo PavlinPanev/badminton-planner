@@ -1,15 +1,8 @@
-import { and, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 import { getApiUser, jsonError } from "@/auth/api";
-import { db, sessionComments } from "@/db";
-import { canManageSession, getSessionGroupForUser } from "@/lib/session-data";
-
-function readCommentText(value: unknown) {
-  return String(value ?? "")
-    .trim()
-    .slice(0, 1000);
-}
+import { parseCommentBody, parseRequiredId } from "@/lib/api-validation";
+import { updateSessionComment } from "@/services/sessions-service";
 
 export async function PATCH(
   request: NextRequest,
@@ -22,60 +15,38 @@ export async function PATCH(
   }
 
   const { id, commentId: rawCommentId } = await params;
-  const sessionId = Number(id);
-  const commentId = Number(rawCommentId);
   const body = await request.json().catch(() => null);
-  const text = readCommentText(body?.text);
+  const parsedSessionId = parseRequiredId(id, "Session id must be a number.");
+  const parsedCommentId = parseRequiredId(rawCommentId, "Comment id must be a number.");
 
-  if (!Number.isInteger(sessionId) || !Number.isInteger(commentId)) {
+  if (!parsedSessionId.success || !parsedCommentId.success) {
     return jsonError("Session id and comment id must be numbers.", 400);
   }
 
-  if (!text) {
-    return jsonError("Comment text is required.", 400);
+  const parsedBody = parseCommentBody(body);
+
+  if (!parsedBody.success) {
+    return jsonError(parsedBody.error, 400);
   }
 
-  const session = await getSessionGroupForUser(sessionId, auth.user);
+  const result = await updateSessionComment(
+    auth.user,
+    parsedSessionId.value,
+    parsedCommentId.value,
+    parsedBody.data.text,
+  );
 
-  if (!session) {
+  if (result.status === "forbidden") {
     return jsonError("You are not a member of this session group.", 403);
   }
 
-  const [existingComment] = await db
-    .select({
-      id: sessionComments.id,
-      userId: sessionComments.userId,
-    })
-    .from(sessionComments)
-    .where(and(eq(sessionComments.id, commentId), eq(sessionComments.sessionId, sessionId)))
-    .limit(1);
-
-  if (!existingComment) {
+  if (result.status === "not-found") {
     return jsonError("Comment not found.", 404);
   }
 
-  const canEdit = existingComment.userId === auth.user.id || (await canManageSession(sessionId, auth.user));
-
-  if (!canEdit) {
+  if (result.status === "forbidden-edit") {
     return jsonError("You can only edit comments you own or manage.", 403);
   }
 
-  const [comment] = await db
-    .update(sessionComments)
-    .set({ text })
-    .where(and(eq(sessionComments.id, commentId), eq(sessionComments.sessionId, sessionId)))
-    .returning({
-      id: sessionComments.id,
-      userId: sessionComments.userId,
-      text: sessionComments.text,
-      commentedAt: sessionComments.commentedAt,
-    });
-
-  return Response.json({
-    data: {
-      ...comment,
-      authorName: existingComment.userId === auth.user.id ? auth.user.name : undefined,
-      canEdit: true,
-    },
-  });
+  return Response.json({ data: result.data });
 }

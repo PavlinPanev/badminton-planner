@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 import { db, users } from "@/db";
+import { parsePaginationParams } from "@/lib/api-validation";
 import { verifySessionToken } from "./token";
 
 export type ApiAuthResult =
@@ -56,17 +57,7 @@ export async function getApiUser(request: NextRequest): Promise<ApiAuthResult> {
 }
 
 export function parsePage(request: NextRequest) {
-  const page = Math.max(Number(request.nextUrl.searchParams.get("page") ?? "1") || 1, 1);
-  const pageSize = Math.min(
-    Math.max(Number(request.nextUrl.searchParams.get("pageSize") ?? "20") || 20, 1),
-    50,
-  );
-
-  return {
-    page,
-    pageSize,
-    offset: (page - 1) * pageSize,
-  };
+  return parsePaginationParams(request.nextUrl.searchParams);
 }
 
 export function paginationMeta(page: number, pageSize: number, totalCount: number) {
