@@ -87,6 +87,7 @@ export const venues = pgTable(
     address: text("address").notNull(),
     city: varchar("city", { length: 120 }).notNull(),
     description: text("description"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

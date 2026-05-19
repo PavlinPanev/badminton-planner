@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { AuthUser } from "@/auth/token";
@@ -291,6 +291,7 @@ export async function getVenueOptions(): Promise<VenueOption[]> {
       city: venues.city,
     })
     .from(venues)
+    .where(isNull(venues.archivedAt))
     .orderBy(asc(venues.city), asc(venues.name));
 }
 

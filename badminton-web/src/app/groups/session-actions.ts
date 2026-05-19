@@ -5,8 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/auth/session";
-import { db, groupMembers, sessions, venues } from "@/db";
+import { db, groupMembers, sessions } from "@/db";
 import { canManageGroupSessions } from "@/lib/group-data";
+import { venueExistsActive } from "@/lib/venue-data";
 
 export type SessionActionState = {
   error?: string;
@@ -21,11 +22,6 @@ function parseOptionalNumber(value: FormDataEntryValue | null) {
 
   const number = Number(raw);
   return Number.isInteger(number) ? number : Number.NaN;
-}
-
-async function venueExists(venueId: number) {
-  const [venue] = await db.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).limit(1);
-  return Boolean(venue);
 }
 
 async function coachBelongsToGroup(groupId: number, coachUserId: number) {
@@ -110,7 +106,7 @@ export async function createSessionAction(
     return { error: parsed.error };
   }
 
-  if (!(await venueExists(parsed.values.venueId))) {
+  if (!(await venueExistsActive(parsed.values.venueId))) {
     return { error: "Choose an existing venue." };
   }
 
@@ -159,7 +155,7 @@ export async function updateSessionAction(
     return { error: parsed.error };
   }
 
-  if (!(await venueExists(parsed.values.venueId))) {
+  if (!(await venueExistsActive(parsed.values.venueId))) {
     return { error: "Choose an existing venue." };
   }
 
