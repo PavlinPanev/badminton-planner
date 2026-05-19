@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BarChart3, CalendarDays, MapPin, ShieldCheck, Trophy, UserCog, UsersRound } from "lucide-react";
+import { BarChart3, CalendarDays, Database, MapPin, ShieldCheck, Trophy, UserCog, UsersRound } from "lucide-react";
 
 import { getCurrentUser } from "@/auth/session";
 import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
@@ -106,11 +106,11 @@ export default async function AdminDashboardPage() {
         {hasData ? (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard label="Users" value={data.totals.users} icon={UsersRound} />
-            <StatCard label="Players" value={data.totals.players} icon={UserCog} />
             <StatCard label="Groups" value={data.totals.groups} icon={Trophy} />
             <StatCard label="Sessions" value={data.totals.sessions} icon={CalendarDays} />
             <StatCard label="Events" value={data.totals.events} icon={BarChart3} />
             <StatCard label="Venues" value={data.totals.venues} icon={MapPin} />
+            <StatCard label="Performance Seed Data" value={data.totals.performanceSeedData} icon={Database} />
           </div>
         ) : (
           <div className="mt-6">
