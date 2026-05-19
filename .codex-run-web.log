@@ -19,3 +19,7 @@
  GET /api/sessions?page=1&pageSize=50 200 in 4.6s (next.js: 2.6s, proxy.ts: 26ms, application-code: 1950ms)
  GET /api/sessions?page=1&pageSize=10 200 in 578ms (next.js: 12ms, proxy.ts: 13ms, application-code: 553ms)
  GET /api/announcements?page=1&pageSize=10 200 in 2.5s (next.js: 1971ms, proxy.ts: 16ms, application-code: 492ms)
+ GET /api/events?page=1&pageSize=10 200 in 656ms (next.js: 26ms, proxy.ts: 21ms, application-code: 609ms)
+ GET /api/events?page=1&pageSize=50 200 in 380ms (next.js: 67ms, proxy.ts: 26ms, application-code: 286ms)
+ GET /api/sessions?page=1&pageSize=50 200 in 2.5s (next.js: 38ms, proxy.ts: 28ms, application-code: 2.4s)
+ GET / 200 in 753ms (next.js: 283ms, proxy.ts: 16ms, application-code: 454ms)
