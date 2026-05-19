@@ -247,6 +247,13 @@ export default async function GroupDetailPage({
                   <Trash2 aria-hidden="true" className="h-4 w-4" />
                   Delete
                 </Link>
+                <Link
+                  href={`/groups/${group.id}/members`}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-50"
+                >
+                  <UsersRound aria-hidden="true" className="h-4 w-4" />
+                  Members
+                </Link>
               </>
             ) : null}
           </div>

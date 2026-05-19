@@ -100,6 +100,41 @@ export type SessionFormContext = {
   coaches: CoachOption[];
 };
 
+export type GroupMembersManagementData = {
+  group: {
+    id: number;
+    title: string;
+  };
+  members: {
+    membershipId: number;
+    userId: number;
+    name: string;
+    email: string;
+    role: string;
+  }[];
+  playerMembers: {
+    membershipId: number;
+    playerId: number;
+    name: string;
+    birthYear: number;
+    skillLevel: string;
+    parentName: string;
+  }[];
+  availablePlayers: {
+    id: number;
+    name: string;
+    birthYear: number;
+    skillLevel: string;
+    parentName: string;
+  }[];
+  availableCoaches: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  }[];
+};
+
 async function getOwnedPlayerIds(user: AuthUser) {
   const ownedPlayers = await db
     .select({ id: players.id })
@@ -355,6 +390,85 @@ export async function getEditableGroupForUser(groupId: number, user: AuthUser) {
   return {
     status: "ok" as const,
     group,
+  };
+}
+
+export async function getGroupMembersManagementForUser(groupId: number, user: AuthUser) {
+  const [group] = await db.select({ id: groups.id, title: groups.title }).from(groups).where(eq(groups.id, groupId)).limit(1);
+
+  if (!group) {
+    return { status: "not-found" as const, data: null };
+  }
+
+  if (!(await canManageGroup(groupId, user))) {
+    return { status: "forbidden" as const, data: null };
+  }
+
+  const parentUsers = alias(users, "parent_users");
+  const [memberRows, playerRows, allPlayers, coachUsers] = await Promise.all([
+    db
+      .select({
+        membershipId: groupMembers.id,
+        userId: users.id,
+        name: users.name,
+        email: users.email,
+        role: groupMembers.role,
+      })
+      .from(groupMembers)
+      .innerJoin(users, eq(groupMembers.userId, users.id))
+      .where(eq(groupMembers.groupId, groupId))
+      .orderBy(asc(groupMembers.role), asc(users.name)),
+    db
+      .select({
+        membershipId: groupMembers.id,
+        playerId: players.id,
+        name: players.name,
+        birthYear: players.birthYear,
+        skillLevel: players.skillLevel,
+        parentName: parentUsers.name,
+      })
+      .from(groupMembers)
+      .innerJoin(players, eq(groupMembers.playerId, players.id))
+      .innerJoin(parentUsers, eq(players.parentUserId, parentUsers.id))
+      .where(eq(groupMembers.groupId, groupId))
+      .orderBy(asc(players.name)),
+    db
+      .select({
+        id: players.id,
+        name: players.name,
+        birthYear: players.birthYear,
+        skillLevel: players.skillLevel,
+        parentName: parentUsers.name,
+      })
+      .from(players)
+      .innerJoin(parentUsers, eq(players.parentUserId, parentUsers.id))
+      .orderBy(asc(players.name)),
+    db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+      })
+      .from(users)
+      .where(inArray(users.role, ["admin", "manager", "coach"]))
+      .orderBy(asc(users.name)),
+  ]);
+
+  const playerMemberIds = new Set(playerRows.map((player) => player.playerId));
+  const coachMemberIds = new Set(
+    memberRows.filter((member) => member.role === "coach" || member.role === "manager").map((member) => member.userId),
+  );
+
+  return {
+    status: "ok" as const,
+    data: {
+      group,
+      members: memberRows,
+      playerMembers: playerRows,
+      availablePlayers: allPlayers.filter((player) => !playerMemberIds.has(player.id)),
+      availableCoaches: coachUsers.filter((coach) => !coachMemberIds.has(coach.id)),
+    } satisfies GroupMembersManagementData,
   };
 }
 
