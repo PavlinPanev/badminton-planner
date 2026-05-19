@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -168,6 +168,50 @@ export async function deleteGroupAction(formData: FormData) {
   }
 
   await db.delete(groups).where(eq(groups.id, groupId));
+
+  revalidatePath("/groups");
+  revalidatePath(`/groups/${groupId}`);
+  redirect("/groups");
+}
+
+export async function leaveGroupAction(_state: GroupActionState, formData: FormData): Promise<GroupActionState> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login?next=/groups");
+  }
+
+  const groupId = Number(formData.get("groupId"));
+
+  if (!Number.isInteger(groupId)) {
+    return { error: "Choose a valid group." };
+  }
+
+  const [membership] = await db
+    .select({
+      id: groupMembers.id,
+      role: groupMembers.role,
+    })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
+    .limit(1);
+
+  if (!membership) {
+    return { error: "You do not have a direct membership to leave in this group." };
+  }
+
+  if (membership.role === "manager") {
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(groupMembers)
+      .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.role, "manager")));
+
+    if (total <= 1) {
+      return { error: "Add another manager before leaving this group." };
+    }
+  }
+
+  await db.delete(groupMembers).where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)));
 
   revalidatePath("/groups");
   revalidatePath(`/groups/${groupId}`);

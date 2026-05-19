@@ -19,6 +19,7 @@ import { Card, EmptyState, SectionHeader } from "@/components/ui/surfaces";
 import { getGroupAgeLabel, getGroupDetailForUser, type GroupDetailData } from "@/lib/group-data";
 import { formatSessionDate, formatSessionTime } from "@/lib/session-status";
 import { InviteLinkPanel } from "../invite-link-panel";
+import { LeaveGroupPanel } from "../leave-group-panel";
 
 function StatPill({ label, value }: { label: string; value: string | number }) {
   return (
@@ -310,6 +311,17 @@ export default async function GroupDetailPage({
             description="Create a one-person invite link for this training group."
           />
           <InviteLinkPanel groupId={group.id} />
+        </section>
+      ) : null}
+
+      {group.canLeave ? (
+        <section className="mt-10">
+          <SectionHeader
+            eyebrow="Membership"
+            title="Leave Group"
+            description="Remove your user account from this group when you no longer need access."
+          />
+          <LeaveGroupPanel groupId={group.id} currentUserRole={group.currentUserRole} />
         </section>
       ) : null}
 

@@ -24,6 +24,8 @@ export type UserGroupCardData = {
 export type GroupDetailData = UserGroupCardData & {
   venueAddress: string;
   venueDescription: string | null;
+  currentUserRole: string | null;
+  canLeave: boolean;
   coaches: {
     id: number;
     name: string;
@@ -437,6 +439,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
     }));
 
   const coaches = directMembers.filter((member) => member.role === "coach" || member.role === "manager");
+  const currentUserDirectMember = memberRows.find((member) => member.userId === user.id);
   const playerRows = memberRows
     .filter((member) => member.playerId)
     .map((member) => ({
@@ -454,6 +457,8 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       ...stats,
       roles: userGroups.find((userGroup) => userGroup.id === groupId)?.roles ?? [],
       canManage: userGroups.find((userGroup) => userGroup.id === groupId)?.canManage ?? false,
+      currentUserRole: currentUserDirectMember?.role ?? null,
+      canLeave: Boolean(currentUserDirectMember),
       canManageSessions,
       coaches,
       players: playerRows,
