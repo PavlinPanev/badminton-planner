@@ -4,6 +4,7 @@ import {
   GraduationCap,
   Mail,
   MapPin,
+  Megaphone,
   Pencil,
   ShieldCheck,
   Trash2,
@@ -141,6 +142,69 @@ function SessionList({ group }: { group: GroupDetailData }) {
               </>
             ) : null}
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatAnnouncementDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function AnnouncementList({ group }: { group: GroupDetailData }) {
+  if (!group.announcements.length) {
+    return <EmptyState title="No announcements yet" description="Group announcements will appear here." />;
+  }
+
+  return (
+    <div className="space-y-4">
+      {group.announcements.map((announcement) => (
+        <div
+          key={announcement.id}
+          className="rounded-3xl border border-white/80 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-zinc-950/5"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">Announcement</p>
+              <h3 className="mt-2 text-xl font-black text-zinc-950">{announcement.title}</h3>
+            </div>
+            <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-700 ring-1 ring-sky-200">
+              {announcement.authorRole}
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-zinc-700">{announcement.content}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold text-zinc-500">
+            <span>◷ {formatAnnouncementDate(announcement.createdAt)}</span>
+            <span>By {announcement.authorName}</span>
+          </div>
+          {group.canManageAnnouncements ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`/groups/${group.id}/announcements/${announcement.id}/edit`}
+                className="inline-flex items-center gap-2 rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-800 transition hover:bg-sky-200"
+              >
+                Edit
+              </Link>
+              <Link
+                href={`/groups/${group.id}/announcements/${announcement.id}/delete`}
+                className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-800 transition hover:bg-rose-200"
+              >
+                Delete
+              </Link>
+            </div>
+          ) : null}
         </div>
       ))}
     </div>
@@ -373,6 +437,28 @@ export default async function GroupDetailPage({
               <EmptyState title="No members listed" description="No direct user memberships are connected to this group yet." />
             )}
           </div>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <SectionHeader
+            eyebrow="Group updates"
+            title="Announcements"
+            description="News, reminders, and updates shared with this group."
+          />
+          {group.canManageAnnouncements ? (
+            <Link
+              href={`/groups/${group.id}/announcements/new`}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+            >
+              <Megaphone aria-hidden="true" className="h-4 w-4" />
+              Create
+            </Link>
+          ) : null}
+        </div>
+        <div className="mt-5">
+          <AnnouncementList group={group} />
         </div>
       </section>
 

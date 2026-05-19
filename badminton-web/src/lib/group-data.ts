@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { AuthUser } from "@/auth/token";
-import { db, groupMembers, groups, players, sessions, users, venues } from "@/db";
+import { db, groupAnnouncements, groupMembers, groups, players, sessions, users, venues } from "@/db";
 import { getSessionState } from "./session-status";
 
 export type UserGroupCardData = {
@@ -56,6 +56,18 @@ export type GroupDetailData = UserGroupCardData & {
     coachName: string | null;
   }[];
   canManageSessions: boolean;
+  announcements: GroupAnnouncementListItem[];
+  canManageAnnouncements: boolean;
+};
+
+export type GroupAnnouncementListItem = {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  authorName: string;
+  authorRole: string;
 };
 
 export type GroupFormData = {
@@ -98,6 +110,19 @@ export type SessionFormContext = {
   };
   venues: VenueOption[];
   coaches: CoachOption[];
+};
+
+export type AnnouncementFormData = {
+  id: number;
+  title: string;
+  content: string;
+};
+
+export type AnnouncementFormContext = {
+  group: {
+    id: number;
+    title: string;
+  };
 };
 
 export type GroupMembersManagementData = {
@@ -274,6 +299,20 @@ export async function canManageGroupSessions(groupId: number, user: AuthUser) {
   return membership?.role === "manager" || membership?.role === "coach";
 }
 
+export async function canManageGroupAnnouncements(groupId: number, user: AuthUser) {
+  if (user.role === "admin") {
+    return true;
+  }
+
+  const [membership] = await db
+    .select({ role: groupMembers.role })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, user.id)))
+    .limit(1);
+
+  return membership?.role === "manager" || membership?.role === "coach";
+}
+
 export async function canViewGroup(groupId: number, user: AuthUser) {
   const accessibleGroupIds = await getUserGroupIds(user);
   return accessibleGroupIds.includes(groupId);
@@ -333,6 +372,25 @@ export async function getSessionFormContextForUser(groupId: number, user: AuthUs
   };
 }
 
+export async function getAnnouncementFormContextForUser(groupId: number, user: AuthUser) {
+  const [group] = await db.select({ id: groups.id, title: groups.title }).from(groups).where(eq(groups.id, groupId)).limit(1);
+
+  if (!group) {
+    return { status: "not-found" as const, context: null };
+  }
+
+  if (!(await canManageGroupAnnouncements(groupId, user))) {
+    return { status: "forbidden" as const, context: null };
+  }
+
+  return {
+    status: "ok" as const,
+    context: {
+      group,
+    } satisfies AnnouncementFormContext,
+  };
+}
+
 export async function getEditableSessionForUser(groupId: number, sessionId: number, user: AuthUser) {
   const [session] = await db
     .select({
@@ -360,6 +418,36 @@ export async function getEditableSessionForUser(groupId: number, sessionId: numb
   return {
     status: "ok" as const,
     session,
+  };
+}
+
+export async function getEditableAnnouncementForUser(groupId: number, announcementId: number, user: AuthUser) {
+  const [announcement] = await db
+    .select({
+      id: groupAnnouncements.id,
+      title: groupAnnouncements.title,
+      content: groupAnnouncements.content,
+      groupId: groupAnnouncements.groupId,
+    })
+    .from(groupAnnouncements)
+    .where(and(eq(groupAnnouncements.id, announcementId), eq(groupAnnouncements.groupId, groupId)))
+    .limit(1);
+
+  if (!announcement) {
+    return { status: "not-found" as const, announcement: null };
+  }
+
+  if (!(await canManageGroupAnnouncements(groupId, user))) {
+    return { status: "forbidden" as const, announcement: null };
+  }
+
+  return {
+    status: "ok" as const,
+    announcement: {
+      id: announcement.id,
+      title: announcement.title,
+      content: announcement.content,
+    } satisfies AnnouncementFormData,
   };
 }
 
@@ -503,7 +591,7 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
   }
 
   const parentUsers = alias(users, "parent_users");
-  const [memberRows, sessionRows, stats, userGroups, canManageSessions] = await Promise.all([
+  const [memberRows, sessionRows, announcementRows, stats, userGroups, canManageSessions, canManageAnnouncements] = await Promise.all([
     db
       .select({
         memberId: groupMembers.id,
@@ -539,9 +627,25 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       .where(eq(sessions.groupId, groupId))
       .orderBy(desc(sessions.sessionDate), desc(sessions.startTime))
       .limit(12),
+    db
+      .select({
+        id: groupAnnouncements.id,
+        title: groupAnnouncements.title,
+        content: groupAnnouncements.content,
+        createdAt: groupAnnouncements.createdAt,
+        updatedAt: groupAnnouncements.updatedAt,
+        authorName: users.name,
+        authorRole: users.role,
+      })
+      .from(groupAnnouncements)
+      .innerJoin(users, eq(groupAnnouncements.authorId, users.id))
+      .where(eq(groupAnnouncements.groupId, groupId))
+      .orderBy(desc(groupAnnouncements.createdAt))
+      .limit(8),
     getGroupStats(groupId),
     getGroupsForUser(user),
     canManageGroupSessions(groupId, user),
+    canManageGroupAnnouncements(groupId, user),
   ]);
 
   const directMembers = memberRows
@@ -575,12 +679,22 @@ export async function getGroupDetailForUser(groupId: number, user: AuthUser) {
       currentUserRole: currentUserDirectMember?.role ?? null,
       canLeave: Boolean(currentUserDirectMember),
       canManageSessions,
+      canManageAnnouncements,
       coaches,
       players: playerRows,
       members: directMembers,
       sessions: sessionRows.map((session) => ({
         ...session,
         state: getSessionState(session.sessionDate, session.startTime),
+      })),
+      announcements: announcementRows.map((announcement) => ({
+        id: announcement.id,
+        title: announcement.title,
+        content: announcement.content,
+        createdAt: announcement.createdAt.toISOString(),
+        updatedAt: announcement.updatedAt.toISOString(),
+        authorName: announcement.authorName,
+        authorRole: announcement.authorRole,
       })),
     },
   };
