@@ -1,70 +1,246 @@
 # Setup Guide
 
-## Requirements
-- Node.js 18+
-- npm 9+
-- PostgreSQL (Neon) or a local Postgres instance
-- Expo Go (for mobile testing)
+This guide explains how to run Badminton Club Planner locally for development and evaluation.
 
-## 1. Clone Repository
+## 1. Requirements
+
+| Requirement | Recommended Version | Notes |
+| --- | --- | --- |
+| Node.js | 20 LTS or newer | Required for Next.js, Expo, TypeScript, and Drizzle tooling. |
+| npm | Bundled with Node.js | This repository uses npm workspaces. |
+| PostgreSQL / Neon DB | PostgreSQL 15+ compatible | Neon is recommended for hosted development. |
+| Expo Go | Latest from iOS App Store or Google Play | Required for testing the mobile app on a device. |
+| Git | Latest stable | Required for cloning and version control. |
+
+## 2. Clone Repository
+
 ```bash
-git clone <REPO_URL>
+git clone <your-github-repo-url>
 cd badminton-planner
 ```
 
-## 2. Install Dependencies
+If your repository name is different, use that folder name instead of `badminton-planner`.
+
+## 3. Install Dependencies
+
+Install all workspace dependencies from the repository root:
+
 ```bash
 npm install
 ```
 
-## 3. Environment Variables
-Create `.env` files as needed.
+The root workspace installs dependencies for:
 
-**Root or badminton-web/.env**
-- `DATABASE_URL` = Neon PostgreSQL connection string
-- `JWT_SECRET` = secret for signing JWTs
-- `NEXT_PUBLIC_APP_URL` = public URL for the web app
+- `badminton-web`
+- `badminton-mobile`
 
-**badminton-mobile/app.config.js** or environment injection
-- `BADMINTON_API_URL` = REST API base URL (e.g. `http://localhost:3000/api`)
+## 4. Environment Variables
 
-## 4. Database Setup
-From the root:
-```bash
-npm run db:generate --workspace=badminton-web
-npm run db:migrate --workspace=badminton-web
-npm run db:seed --workspace=badminton-web
+Create local environment files for the web and mobile apps.
+
+### Web App
+
+Create `badminton-web/.env`:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/dbname?sslmode=require"
+JWT_SECRET="replace-with-a-long-random-secret"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-## 5. Run Web App
-```bash
-npm run dev --workspace=badminton-web
+### Mobile App
+
+Create `badminton-mobile/.env`:
+
+```env
+BADMINTON_API_URL="http://localhost:3000/api"
 ```
 
-## 6. Run Mobile App
-```bash
-npm run dev --workspace=badminton-mobile
+For a physical mobile device, `localhost` points to the phone, not the development machine. Use your computer's LAN IP address:
+
+```env
+BADMINTON_API_URL="http://192.168.1.50:3000/api"
 ```
 
-## 7. Run Entire Monorepo
+### Variable Reference
+
+| Variable | Required | Used By | Description |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | Yes | Web/backend | Neon PostgreSQL connection string used by Drizzle and the app. |
+| `JWT_SECRET` | Yes | Web/backend | Secret used to sign and verify JWT authentication tokens. |
+| `NEXT_PUBLIC_APP_URL` | Recommended | Web | Public URL for links, redirects, and deployed environments. |
+| `BADMINTON_API_URL` | Yes for mobile | Mobile | Base REST API URL consumed by the Expo app. |
+
+Generate a strong JWT secret with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+## 5. Database Setup
+
+Run Drizzle commands from the repository root using the web workspace.
+
+Generate migrations from the Drizzle schema:
+
+```bash
+npm run db:generate --workspace badminton-web
+```
+
+Apply migrations to the configured PostgreSQL database:
+
+```bash
+npm run db:migrate --workspace badminton-web
+```
+
+Seed generated demo data:
+
+```bash
+npm run db:seed --workspace badminton-web
+```
+
+The seed script creates fictional users, players, venues, groups, sessions, attendance records, comments, events, announcements, and group invitations for evaluation.
+
+## 6. Run Web App
+
+Preferred course command:
+
+```bash
+npm run dev:web
+```
+
+Current workspace equivalent:
+
+```bash
+npm run dev --workspace badminton-web
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+## 7. Run Mobile App
+
+Preferred course command:
+
+```bash
+npm run dev:mobile
+```
+
+Current workspace equivalent:
+
+```bash
+npm run dev --workspace badminton-mobile
+```
+
+Then scan the Expo QR code with Expo Go.
+
+For mobile device testing, confirm that `BADMINTON_API_URL` points to an address reachable from the device.
+
+## 8. Run Entire Monorepo
+
+Start the web and mobile development servers together:
+
 ```bash
 npm run dev
 ```
 
-## Common Problems
+The root command uses `concurrently` to run both app workspaces.
 
-**Database connection issues**
-- Verify `DATABASE_URL` points to a reachable Neon database
-- Confirm your IP is allowed in Neon
+## 9. Useful Commands
 
-**JWT issues**
-- Ensure `JWT_SECRET` is set and consistent across web and API
-- Re-login after changing secrets
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Run web and mobile development servers together. |
+| `npm run build` | Build all workspaces that define a build script. |
+| `npm run dev --workspace badminton-web` | Run the Next.js web app and API. |
+| `npm run dev --workspace badminton-mobile` | Run the Expo mobile app. |
+| `npm run lint --workspace badminton-web` | Lint the web app. |
+| `npm run lint --workspace badminton-mobile` | Lint the mobile app. |
+| `npm run db:generate --workspace badminton-web` | Generate Drizzle migrations. |
+| `npm run db:migrate --workspace badminton-web` | Apply database migrations. |
+| `npm run db:seed --workspace badminton-web` | Seed demo data. |
 
-**CORS issues**
-- Confirm the mobile API URL matches the web host and port
-- Check that the API base URL uses `/api`
+## 10. Demo Credentials
 
-**Expo networking issues**
-- Use your machine LAN IP instead of `localhost` on real devices
-- Ensure the API port is reachable on the same network
+| Email | Password |
+| --- | --- |
+| `demo@badminton.test` | `pass123` |
+
+Seeded development databases may include additional role-specific accounts for admin, manager, coach, and parent testing.
+
+## 11. Common Problems
+
+### Database Connection Issues
+
+Symptoms:
+
+- Drizzle commands fail.
+- The web app throws `DATABASE_URL is required`.
+- Requests fail when loading groups, sessions, events, or venues.
+
+Checklist:
+
+- Confirm `badminton-web/.env` exists.
+- Confirm `DATABASE_URL` is a valid Neon PostgreSQL URL.
+- Include `sslmode=require` for Neon.
+- Run migrations before starting the app.
+- Check that your Neon database is active and not paused.
+
+### JWT Issues
+
+Symptoms:
+
+- Login succeeds but protected API calls return `401`.
+- Mobile app appears signed out after requests.
+- API returns `Bearer token is invalid or expired`.
+
+Checklist:
+
+- Confirm `JWT_SECRET` is set in `badminton-web/.env`.
+- Restart the web dev server after changing `.env`.
+- Clear the mobile app session if the secret changed.
+- Ensure the mobile request includes `Authorization: Bearer <token>`.
+
+### CORS Issues
+
+Symptoms:
+
+- Browser or mobile web testing reports blocked cross-origin requests.
+- API works in the browser but not from another origin.
+
+Checklist:
+
+- Use the configured local API URL.
+- Keep mobile requests pointed at `/api` on the Next.js backend.
+- Add explicit CORS handling only for external origins that need browser access.
+- Avoid using production domains with local development tokens.
+
+### Expo Networking Issues
+
+Symptoms:
+
+- Mobile app cannot reach `http://localhost:3000/api`.
+- Requests time out on a physical device.
+- Expo Go works in web mode but not on the phone.
+
+Checklist:
+
+- Replace `localhost` with your computer's LAN IP address in `BADMINTON_API_URL`.
+- Make sure the phone and development machine are on the same network.
+- Allow Node.js/Next.js through the local firewall.
+- Restart Expo after editing `badminton-mobile/.env`.
+- Verify the API from the phone browser: `http://<your-lan-ip>:3000/api/docs`.
+
+## 12. Evaluation Notes
+
+For capstone evaluation, the recommended flow is:
+
+1. Run migrations and seed data.
+2. Start the web app.
+3. Log in with demo credentials.
+4. Review dashboard, groups, sessions, attendance, comments, venues, and events.
+5. Start the mobile app with `BADMINTON_API_URL` pointing to the running API.
+6. Test session viewing, attendance, comments, announcements, and event registration from mobile.
