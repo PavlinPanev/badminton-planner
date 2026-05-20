@@ -197,9 +197,9 @@ Evaluation URLs:
 
 | Resource | URL |
 | --- | --- |
-| Web App and REST API | `https://badminton-planner-web.netlify.app` |
-| Mobile Web Preview | `https://badminton-planner-mobile.netlify.app` |
-| API Docs Endpoint | `https://badminton-planner-web.netlify.app/api/docs` |
+| Web App and REST API | `https://badminton-planner-web-may-2026.netlify.app` |
+| Mobile Web Preview | `https://badminton-planner-mobile-may-2026.netlify.app` |
+| API Docs Endpoint | `https://badminton-planner-web-may-2026.netlify.app/api/docs` |
 
 See the dedicated [deployment guide](deployment-guide.md) for Netlify build settings, Neon setup, environment variables, and the final submission checklist.
 

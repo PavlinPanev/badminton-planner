@@ -112,9 +112,9 @@ The seeded database contains generated demonstration data for safe evaluation an
 
 | Resource | URL |
 | --- | --- |
-| Web App and REST API | https://badminton-planner-web.netlify.app |
-| Mobile App Preview | https://badminton-planner-mobile.netlify.app |
-| API Docs | https://badminton-planner-web.netlify.app/api/docs |
+| Web App and REST API | https://badminton-planner-web-may-2026.netlify.app |
+| Mobile App Preview | https://badminton-planner-mobile-may-2026.netlify.app |
+| API Docs | https://badminton-planner-web-may-2026.netlify.app/api/docs |
 | GitHub Repository | https://github.com/Pavlin-Panev/badminton-planner |
 
 The Netlify URLs above are capstone evaluation URLs. Replace them with the final deployed URLs before submission if the site names change.

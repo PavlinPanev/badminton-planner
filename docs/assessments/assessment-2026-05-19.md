@@ -334,9 +334,9 @@ Prepare the Expo mobile app for capstone evaluation:
 - `badminton-web/.env.example` and `badminton-mobile/.env.example` are committed with safe placeholder values.
 - `docs/deployment-guide.md` documents Netlify build settings, Neon setup, environment variables, demo accounts, and smoke tests.
 - README includes assumed evaluation URLs:
-  - `https://badminton-planner-web.netlify.app`
-  - `https://badminton-planner-mobile.netlify.app`
-  - `https://badminton-planner-web.netlify.app/api/docs`
+  - `https://badminton-planner-web-may-2026.netlify.app`
+  - `https://badminton-planner-mobile-may-2026.netlify.app`
+  - `https://badminton-planner-web-may-2026.netlify.app/api/docs`
 - Expo mobile web export was generated locally into `badminton-mobile/dist`.
 
 ### Missing / Weak Areas

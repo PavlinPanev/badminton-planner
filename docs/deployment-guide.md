@@ -10,9 +10,9 @@ The URLs below are evaluation placeholders and should be replaced with the final
 
 | Resource | URL |
 | --- | --- |
-| Web App and REST API | `https://badminton-planner-web.netlify.app` |
-| Mobile Web Preview | `https://badminton-planner-mobile.netlify.app` |
-| API Docs Endpoint | `https://badminton-planner-web.netlify.app/api/docs` |
+| Web App and REST API | `https://badminton-planner-web-may-2026.netlify.app` |
+| Mobile Web Preview | `https://badminton-planner-mobile-may-2026.netlify.app` |
+| API Docs Endpoint | `https://badminton-planner-web-may-2026.netlify.app/api/docs` |
 
 ## 1. Neon Database
 
@@ -61,7 +61,7 @@ Add these Netlify environment variables for the web site:
 | --- | --- |
 | `DATABASE_URL` | Neon PostgreSQL connection string |
 | `JWT_SECRET` | Long random secret used for JWT signing |
-| `NEXT_PUBLIC_APP_URL` | `https://badminton-planner-web.netlify.app` |
+| `NEXT_PUBLIC_APP_URL` | `https://badminton-planner-web-may-2026.netlify.app` |
 
 Generate a strong JWT secret locally:
 
@@ -89,7 +89,7 @@ Recommended Netlify settings:
 Add this Netlify environment variable for the mobile preview site:
 
 ```env
-BADMINTON_API_URL="https://badminton-planner-web.netlify.app/api"
+BADMINTON_API_URL="https://badminton-planner-web-may-2026.netlify.app/api"
 ```
 
 Local verification command:
@@ -146,7 +146,7 @@ After deployment:
 1. Open the web app URL.
 2. Log in as `admin@badminton.test` with `pass123`.
 3. Confirm dashboard, admin users, groups, sessions, venues, events, and profile load.
-4. Open `https://badminton-planner-web.netlify.app/api/docs`.
+4. Open `https://badminton-planner-web-may-2026.netlify.app/api/docs`.
 5. Open the mobile preview URL.
 6. Log in as a parent account.
 7. Confirm sessions, session details, attendance, comments, groups, announcements, events, and account screens load.

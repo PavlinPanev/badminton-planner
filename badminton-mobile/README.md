@@ -51,7 +51,7 @@ Recommended Netlify settings:
 Set `BADMINTON_API_URL` in Netlify to the deployed web API, for example:
 
 ```env
-BADMINTON_API_URL="https://badminton-planner-web.netlify.app/api"
+BADMINTON_API_URL="https://badminton-planner-web-may-2026.netlify.app/api"
 ```
 
 See [../docs/deployment-guide.md](../docs/deployment-guide.md) for the full deployment checklist.
