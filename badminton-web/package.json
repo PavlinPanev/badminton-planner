@@ -42,5 +42,8 @@
     "tsx": "^4.22.1",
     "typescript": "^5",
     "vitest": "^4.1.6"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.0"
   }
 }
