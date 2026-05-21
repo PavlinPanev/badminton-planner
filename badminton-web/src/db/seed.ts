@@ -1,6 +1,5 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { inArray } from "drizzle-orm";
 
 import {
   db,
@@ -20,102 +19,47 @@ import {
 
 const password = "pass123";
 
-const adminEmail = "admin@badminton.test";
-const managerEmail = "desislava.ivanova@badminton.test";
-const coach1Email = "georgi.stoyanov@badminton.test";
-const coach2Email = "petar.kolev@badminton.test";
-const parent1Email = "elena.dimitrova@badminton.test";
-const parent2Email = "ivan.mihaylov@badminton.test";
-const parent3Email = "silvia.vasileva@badminton.test";
-
 const coreUsers = [
-  { email: adminEmail, name: "Nikolay Petrov", role: "admin" as const },
-  { email: managerEmail, name: "Desislava Ivanova", role: "manager" as const },
-  { email: coach1Email, name: "Georgi Stoyanov", role: "coach" as const },
-  { email: coach2Email, name: "Petar Kolev", role: "coach" as const },
-  { email: parent1Email, name: "Elena Dimitrova", role: "parent" as const },
-  { email: parent2Email, name: "Ivan Mihaylov", role: "parent" as const },
-  { email: parent3Email, name: "Silvia Vasileva", role: "parent" as const },
+  { email: "admin@badminton.test", name: "Nikolay Petrov", role: "admin" as const },
+  { email: "desislava.ivanova@badminton.test", name: "Desislava Ivanova", role: "manager" as const },
+  { email: "georgi.stoyanov@badminton.test", name: "Georgi Stoyanov", role: "coach" as const },
+  { email: "petar.kolev@badminton.test", name: "Petar Kolev", role: "coach" as const },
+  { email: "maria.atanasova@badminton.test", name: "Maria Atanasova", role: "coach" as const },
+  { email: "elena.dimitrova@badminton.test", name: "Elena Dimitrova", role: "parent" as const },
+  { email: "ivan.mihaylov@badminton.test", name: "Ivan Mihaylov", role: "parent" as const },
+  { email: "silvia.vasileva@badminton.test", name: "Silvia Vasileva", role: "parent" as const },
+  { email: "kalina.marinova@badminton.test", name: "Kalina Marinova", role: "parent" as const },
+  { email: "borislav.angelov@badminton.test", name: "Borislav Angelov", role: "parent" as const },
 ];
 
-const extraUsers = [
+const socialPlayers = [
   { email: "ivaylo.georgiev@badminton.test", name: "Ivaylo Georgiev" },
   { email: "daniela.stoyanova@badminton.test", name: "Daniela Stoyanova" },
-  { email: "borislav.angelov@badminton.test", name: "Borislav Angelov" },
-  { email: "kalina.marinova@badminton.test", name: "Kalina Marinova" },
-  { email: "petya.dimitrova@badminton.test", name: "Petya Dimitrova" },
   { email: "radislav.petkov@badminton.test", name: "Radislav Petkov" },
-  { email: "simeon.todorov@badminton.test", name: "Simeon Todorov" },
   { email: "yoana.koleva@badminton.test", name: "Yoana Koleva" },
   { email: "vladimir.iliev@badminton.test", name: "Vladimir Iliev" },
   { email: "vesela.stefanova@badminton.test", name: "Vesela Stefanova" },
   { email: "plamen.rusev@badminton.test", name: "Plamen Rusev" },
   { email: "tanya.ivanova@badminton.test", name: "Tanya Ivanova" },
-  { email: "nikola.velchev@badminton.test", name: "Nikola Velchev" },
-  { email: "stefka.gancheva@badminton.test", name: "Stefka Gancheva" },
-  { email: "emil.tonev@badminton.test", name: "Emil Tonev" },
-  { email: "adelina.tsankova@badminton.test", name: "Adelina Tsankova" },
-  { email: "georgina.petrova@badminton.test", name: "Georgina Petrova" },
-  { email: "hristo.milanov@badminton.test", name: "Hristo Milanov" },
-  { email: "yana.kostova@badminton.test", name: "Yana Kostova" },
-  { email: "kiril.atanasov@badminton.test", name: "Kiril Atanasov" },
 ];
 
-const seededEmails = [...coreUsers.map((user) => user.email), ...extraUsers.map((user) => user.email)];
-
-const seededPlayerNames = [
-  "Aleksandar Petrov",
-  "Borislav Dimitrov",
-  "Viktor Hristov",
-  "Georgi Stoyanov",
-  "Dimitar Ivanov",
-  "Elena Petrova",
-  "Zornitsa Marinova",
-  "Ivaylo Kolev",
-  "Kalin Todorov",
-  "Liliya Georgieva",
-  "Martin Angelov",
-  "Nadezhda Petrova",
-  "Petar Iliev",
-  "Radostina Vasileva",
-  "Stefan Nikolov",
-  "Tanya Hristova",
-  "Hristo Pavlov",
-  "Yana Kostova",
-  "Kiril Milanov",
-  "Maria Popova",
-  "Nikola Dimitrov",
-  "Ognian Kirov",
-  "Preslava Danailova",
-  "Radoslav Ganchev",
-  "Simona Yaneva",
-  "Teodor Stanev",
-  "Vanya Petkova",
-  "Yordan Zhelev",
-  "Zlatina Todorova",
-  "Hristina Koleva",
-];
-
-const seededVenueNames = [
-  "Arena Sofia Hall",
-  "Plovdiv Sports Center",
-  "Varna Sea Palace",
-  "Burgas Mladost Hall",
-  "Ruse Danube Arena",
-];
-
-const seededGroupTitles = [
-  "Sofia Kids 7-10",
-  "Plovdiv Advanced Juniors",
-  "Varna Beginners",
-  "Sofia Social Adults",
-];
-
-const seededEventTitles = [
-  "Sofia Junior Open",
-  "Varna Summer Camp",
-  "Burgas Club Social Night",
-  "Plovdiv Training Day",
+const playerSeed = [
+  { name: "Aleksandar Petrov", birthYear: 2018, skillLevel: "beginner" as const, parentEmail: "elena.dimitrova@badminton.test" },
+  { name: "Mila Dimitrova", birthYear: 2017, skillLevel: "beginner" as const, parentEmail: "elena.dimitrova@badminton.test" },
+  { name: "Viktor Mihaylov", birthYear: 2016, skillLevel: "beginner" as const, parentEmail: "ivan.mihaylov@badminton.test" },
+  { name: "Nia Mihaylova", birthYear: 2015, skillLevel: "intermediate" as const, parentEmail: "ivan.mihaylov@badminton.test" },
+  { name: "Stefan Vasilev", birthYear: 2014, skillLevel: "intermediate" as const, parentEmail: "silvia.vasileva@badminton.test" },
+  { name: "Radostina Vasileva", birthYear: 2013, skillLevel: "advanced" as const, parentEmail: "silvia.vasileva@badminton.test" },
+  { name: "Kalin Marinov", birthYear: 2014, skillLevel: "intermediate" as const, parentEmail: "kalina.marinova@badminton.test" },
+  { name: "Lora Marinova", birthYear: 2012, skillLevel: "advanced" as const, parentEmail: "kalina.marinova@badminton.test" },
+  { name: "Boris Angelov", birthYear: 2011, skillLevel: "advanced" as const, parentEmail: "borislav.angelov@badminton.test" },
+  { name: "Teodor Angelov", birthYear: 2009, skillLevel: "competitive" as const, parentEmail: "borislav.angelov@badminton.test" },
+  { name: "Yana Kostova", birthYear: 2010, skillLevel: "competitive" as const, parentEmail: "elena.dimitrova@badminton.test" },
+  { name: "Martin Hristov", birthYear: 2008, skillLevel: "competitive" as const, parentEmail: "ivan.mihaylov@badminton.test" },
+  { name: "Simona Petrova", birthYear: 2016, skillLevel: "beginner" as const, parentEmail: "silvia.vasileva@badminton.test" },
+  { name: "Daniel Kolev", birthYear: 2015, skillLevel: "beginner" as const, parentEmail: "kalina.marinova@badminton.test" },
+  { name: "Preslava Ilieva", birthYear: 2013, skillLevel: "intermediate" as const, parentEmail: "borislav.angelov@badminton.test" },
+  { name: "Nikola Rusev", birthYear: 2012, skillLevel: "advanced" as const, parentEmail: "elena.dimitrova@badminton.test" },
 ];
 
 function addDays(date: Date, days: number) {
@@ -134,78 +78,30 @@ function atLocalHour(date: Date, hour: number) {
   return next;
 }
 
-async function cleanupSeedData() {
-  const existingGroups = await db
-    .select({ id: groups.id })
-    .from(groups)
-    .where(inArray(groups.title, seededGroupTitles));
-  const existingSessions = existingGroups.length
-    ? await db
-        .select({ id: sessions.id })
-        .from(sessions)
-        .where(
-          inArray(
-            sessions.groupId,
-            existingGroups.map((group) => group.id),
-          ),
-        )
-    : [];
-  const existingEvents = await db
-    .select({ id: events.id })
-    .from(events)
-    .where(inArray(events.title, seededEventTitles));
-
-  if (existingSessions.length) {
-    const sessionIds = existingSessions.map((session) => session.id);
-    await db.delete(sessionComments).where(inArray(sessionComments.sessionId, sessionIds));
-    await db.delete(sessionAttendance).where(inArray(sessionAttendance.sessionId, sessionIds));
-    await db.delete(sessions).where(inArray(sessions.id, sessionIds));
-  }
-
-  if (existingGroups.length) {
-    const groupIds = existingGroups.map((group) => group.id);
-    await db.delete(groupAnnouncements).where(inArray(groupAnnouncements.groupId, groupIds));
-    await db.delete(groupInvitations).where(inArray(groupInvitations.groupId, groupIds));
-    await db.delete(groupMembers).where(inArray(groupMembers.groupId, groupIds));
-    await db.delete(groups).where(inArray(groups.id, groupIds));
-  }
-
-  if (existingEvents.length) {
-    const eventIds = existingEvents.map((event) => event.id);
-    await db.delete(eventRegistrations).where(inArray(eventRegistrations.eventId, eventIds));
-    await db.delete(events).where(inArray(events.id, eventIds));
-  }
-
-  const existingUsers = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(inArray(users.email, seededEmails));
-
-  if (existingUsers.length) {
-    const userIds = existingUsers.map((user) => user.id);
-    await db.delete(groupAnnouncements).where(inArray(groupAnnouncements.authorId, userIds));
-  }
-
-  await db.delete(players).where(inArray(players.name, seededPlayerNames));
-  await db.delete(users).where(inArray(users.email, seededEmails));
-  await db.delete(venues).where(inArray(venues.name, seededVenueNames));
+async function resetDatabase() {
+  await db.delete(eventRegistrations);
+  await db.delete(sessionComments);
+  await db.delete(sessionAttendance);
+  await db.delete(groupInvitations);
+  await db.delete(groupAnnouncements);
+  await db.delete(groupMembers);
+  await db.delete(sessions);
+  await db.delete(events);
+  await db.delete(groups);
+  await db.delete(players);
+  await db.delete(users);
+  await db.delete(venues);
 }
 
 async function main() {
-  await cleanupSeedData();
+  await resetDatabase();
 
   const passwordHash = await bcrypt.hash(password, 10);
-
   const insertedUsers = await db
     .insert(users)
     .values([
-      ...coreUsers.map((user) => ({
-        email: user.email,
-        passwordHash,
-        name: user.name,
-        role: user.role,
-      })),
-      ...extraUsers.map((user) => ({
+      ...coreUsers.map((user) => ({ ...user, passwordHash })),
+      ...socialPlayers.map((user) => ({
         email: user.email,
         passwordHash,
         name: user.name,
@@ -215,63 +111,66 @@ async function main() {
     .returning();
 
   const userByEmail = new Map(insertedUsers.map((user) => [user.email, user]));
-  const manager = userByEmail.get(managerEmail)!;
-  const coach1 = userByEmail.get(coach1Email)!;
-  const coach2 = userByEmail.get(coach2Email)!;
-  const parents = [
-    userByEmail.get(parent1Email)!,
-    userByEmail.get(parent2Email)!,
-    userByEmail.get(parent3Email)!,
-  ];
-  const adultUsers = extraUsers.map((user) => userByEmail.get(user.email)!);
+  const admin = userByEmail.get("admin@badminton.test")!;
+  const manager = userByEmail.get("desislava.ivanova@badminton.test")!;
+  const coachGeorgi = userByEmail.get("georgi.stoyanov@badminton.test")!;
+  const coachPetar = userByEmail.get("petar.kolev@badminton.test")!;
+  const coachMaria = userByEmail.get("maria.atanasova@badminton.test")!;
+  const parentUsers = coreUsers.filter((user) => user.role === "parent").map((user) => userByEmail.get(user.email)!);
+  const socialUsers = socialPlayers.map((user) => userByEmail.get(user.email)!);
 
   const insertedPlayers = await db
     .insert(players)
     .values(
-      seededPlayerNames.map((name, index) => ({
-        name,
-        birthYear: 2009 + (index % 9),
-        skillLevel: (index < 12 ? "beginner" : index < 24 ? "advanced" : "intermediate") as
-          | "beginner"
-          | "advanced"
-          | "intermediate",
-        parentUserId: parents[index % parents.length].id,
+      playerSeed.map((player) => ({
+        name: player.name,
+        birthYear: player.birthYear,
+        skillLevel: player.skillLevel,
+        parentUserId: userByEmail.get(player.parentEmail)!.id,
       })),
     )
     .returning();
+
+  const playerByName = new Map(insertedPlayers.map((player) => [player.name, player]));
 
   const insertedVenues = await db
     .insert(venues)
     .values([
       {
-        name: "Arena Sofia Hall",
-        address: "12 Tsarigradsko Shose Blvd",
+        name: "Sport Complex Akademik",
+        address: "Stadion Akademik, Geo Milev, Slatina",
         city: "Sofia",
-        description: "Central training hall with six courts and updated flooring.",
+        description: "Main Sofia training base inspired by the Akademik area near Festivalna hall.",
       },
       {
-        name: "Plovdiv Sports Center",
-        address: "18 Hristo Botev Blvd",
-        city: "Plovdiv",
-        description: "Multi-sport complex for junior squads and weekend camps.",
+        name: "Sport Center Chelopechene",
+        address: "Chelopechene district",
+        city: "Sofia",
+        description: "Club tournament venue for junior rounds and weekend match play.",
       },
       {
-        name: "Varna Sea Palace",
-        address: "5 Primorski Blvd",
-        city: "Varna",
-        description: "Coastal hall used for beginner groups and summer programs.",
+        name: "Elin Pelin Municipal Hall",
+        address: "1 Nezavisimost Square",
+        city: "Elin Pelin",
+        description: "Regional school hall for junior groups outside Sofia.",
       },
       {
-        name: "Burgas Mladost Hall",
-        address: "22 Mladost Street",
-        city: "Burgas",
-        description: "Community hall for social play and open training days.",
+        name: "Gorna Malina Sports Hall",
+        address: "20 Hristo Botev Street",
+        city: "Gorna Malina",
+        description: "Local training hall used for beginners and family sessions.",
       },
       {
-        name: "Ruse Danube Arena",
-        address: "9 Dunavska Street",
-        city: "Ruse",
-        description: "Regional hall hosting weekend training blocks.",
+        name: "MMC Helios Primorsko",
+        address: "International Youth Center Helios",
+        city: "Primorsko",
+        description: "Coastal camp base for summer training weeks and team building.",
+      },
+      {
+        name: "Arena Sofia Practice Hall",
+        address: "1 Asen Yordanov Blvd",
+        city: "Sofia",
+        description: "Large-capacity hall for showcases, finals, and open club days.",
       },
     ])
     .returning();
@@ -282,98 +181,97 @@ async function main() {
     .insert(groups)
     .values([
       {
-        title: "Sofia Kids 7-10",
-        description: "Beginner group for young players in Sofia.",
+        title: "Sofia U11 Fundamentals",
+        description: "First steps in grip, movement, service, and simple games for children under 11.",
+        level: "beginner",
+        minAge: 6,
+        maxAge: 10,
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+      },
+      {
+        title: "Sofia U13 Development",
+        description: "Structured drills for under-13 players preparing for club tour events.",
+        level: "intermediate",
+        minAge: 10,
+        maxAge: 13,
+        venueId: venueByName.get("Sport Center Chelopechene")!.id,
+      },
+      {
+        title: "Junior Competitive 14-19",
+        description: "Match-focused squad for advanced teenagers competing in singles and doubles.",
+        level: "competitive",
+        minAge: 14,
+        maxAge: 19,
+        venueId: venueByName.get("Arena Sofia Practice Hall")!.id,
+      },
+      {
+        title: "Elin Pelin Beginners",
+        description: "Regional children group with light technical work and parent-friendly scheduling.",
         level: "beginner",
         minAge: 7,
-        maxAge: 10,
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
-      },
-      {
-        title: "Plovdiv Advanced Juniors",
-        description: "Advanced junior squad with extra footwork drills.",
-        level: "advanced",
-        minAge: 12,
-        maxAge: 17,
-        venueId: venueByName.get("Plovdiv Sports Center")!.id,
-      },
-      {
-        title: "Varna Beginners",
-        description: "Friendly beginner group focused on basics and fun games.",
-        level: "beginner",
-        minAge: 8,
         maxAge: 12,
-        venueId: venueByName.get("Varna Sea Palace")!.id,
+        venueId: venueByName.get("Elin Pelin Municipal Hall")!.id,
       },
       {
-        title: "Sofia Social Adults",
-        description: "Evening social badminton for adult members and parents.",
+        title: "Gorna Malina Family Badminton",
+        description: "Mixed family sessions for children and parents who want relaxed doubles play.",
+        level: "intermediate",
+        minAge: 10,
+        venueId: venueByName.get("Gorna Malina Sports Hall")!.id,
+      },
+      {
+        title: "Social Badminton Sofia",
+        description: "Adult evening group for recreational players, parents, and returning athletes.",
         level: "intermediate",
         minAge: 18,
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
       },
     ])
     .returning();
 
   const groupByTitle = new Map(insertedGroups.map((group) => [group.title, group]));
   const groupMemberRows = [
-    {
-      groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-      userId: manager.id,
+    ...insertedGroups.map((group) => ({
+      groupId: group.id,
+      userId: admin.id,
       role: "manager" as const,
-    },
-    {
-      groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-      userId: coach1.id,
-      role: "coach" as const,
-    },
-    ...insertedPlayers.slice(0, 12).map((player) => ({
-      groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-      playerId: player.id,
+    })),
+    { groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id, userId: manager.id, role: "manager" as const },
+    { groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id, userId: coachGeorgi.id, role: "coach" as const },
+    ...["Aleksandar Petrov", "Mila Dimitrova", "Viktor Mihaylov", "Simona Petrova", "Daniel Kolev"].map((name) => ({
+      groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id,
+      playerId: playerByName.get(name)!.id,
       role: "player" as const,
     })),
-    {
-      groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-      userId: manager.id,
-      role: "manager" as const,
-    },
-    {
-      groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-      userId: coach2.id,
-      role: "coach" as const,
-    },
-    ...insertedPlayers.slice(12, 24).map((player) => ({
-      groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-      playerId: player.id,
+    { groupId: groupByTitle.get("Sofia U13 Development")!.id, userId: manager.id, role: "manager" as const },
+    { groupId: groupByTitle.get("Sofia U13 Development")!.id, userId: coachMaria.id, role: "coach" as const },
+    ...["Nia Mihaylova", "Stefan Vasilev", "Kalin Marinov", "Lora Marinova", "Preslava Ilieva", "Nikola Rusev"].map((name) => ({
+      groupId: groupByTitle.get("Sofia U13 Development")!.id,
+      playerId: playerByName.get(name)!.id,
       role: "player" as const,
     })),
-    {
-      groupId: groupByTitle.get("Varna Beginners")!.id,
-      userId: manager.id,
-      role: "manager" as const,
-    },
-    {
-      groupId: groupByTitle.get("Varna Beginners")!.id,
-      userId: coach1.id,
-      role: "coach" as const,
-    },
-    ...insertedPlayers.slice(4, 18).map((player) => ({
-      groupId: groupByTitle.get("Varna Beginners")!.id,
-      playerId: player.id,
+    { groupId: groupByTitle.get("Junior Competitive 14-19")!.id, userId: manager.id, role: "manager" as const },
+    { groupId: groupByTitle.get("Junior Competitive 14-19")!.id, userId: coachPetar.id, role: "coach" as const },
+    ...["Radostina Vasileva", "Boris Angelov", "Teodor Angelov", "Yana Kostova", "Martin Hristov"].map((name) => ({
+      groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+      playerId: playerByName.get(name)!.id,
       role: "player" as const,
     })),
-    {
-      groupId: groupByTitle.get("Sofia Social Adults")!.id,
-      userId: manager.id,
-      role: "manager" as const,
-    },
-    {
-      groupId: groupByTitle.get("Sofia Social Adults")!.id,
-      userId: coach2.id,
-      role: "coach" as const,
-    },
-    ...adultUsers.map((user) => ({
-      groupId: groupByTitle.get("Sofia Social Adults")!.id,
+    { groupId: groupByTitle.get("Elin Pelin Beginners")!.id, userId: coachGeorgi.id, role: "coach" as const },
+    ...["Aleksandar Petrov", "Viktor Mihaylov", "Simona Petrova", "Daniel Kolev"].map((name) => ({
+      groupId: groupByTitle.get("Elin Pelin Beginners")!.id,
+      playerId: playerByName.get(name)!.id,
+      role: "player" as const,
+    })),
+    { groupId: groupByTitle.get("Gorna Malina Family Badminton")!.id, userId: coachMaria.id, role: "coach" as const },
+    ...parentUsers.slice(0, 4).map((user) => ({
+      groupId: groupByTitle.get("Gorna Malina Family Badminton")!.id,
+      userId: user.id,
+      role: "parent" as const,
+    })),
+    { groupId: groupByTitle.get("Social Badminton Sofia")!.id, userId: coachPetar.id, role: "coach" as const },
+    ...socialUsers.map((user) => ({
+      groupId: groupByTitle.get("Social Badminton Sofia")!.id,
       userId: user.id,
       role: "parent" as const,
     })),
@@ -385,20 +283,28 @@ async function main() {
     .insert(groupInvitations)
     .values([
       {
-        groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-        inviteCode: "SOFIA-KIDS-2026",
-        userId: parents[0].id,
+        groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id,
+        inviteCode: "SOFIA-U11-OPEN-2026",
+        userId: parentUsers[0].id,
         usedAt: new Date(),
       },
       {
-        groupId: groupByTitle.get("Varna Beginners")!.id,
-        inviteCode: "VARNA-BEGINNERS-2026",
+        groupId: groupByTitle.get("Sofia U13 Development")!.id,
+        inviteCode: "SOFIA-U13-TRIAL-2026",
       },
       {
-        groupId: groupByTitle.get("Sofia Social Adults")!.id,
-        inviteCode: "SOFIA-SOCIAL-2026",
-        userId: adultUsers[0].id,
+        groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+        inviteCode: "JUNIOR-COMP-2026",
+      },
+      {
+        groupId: groupByTitle.get("Social Badminton Sofia")!.id,
+        inviteCode: "SOCIAL-SOFIA-THU",
+        userId: socialUsers[0].id,
         usedAt: new Date(),
+      },
+      {
+        groupId: groupByTitle.get("Gorna Malina Family Badminton")!.id,
+        inviteCode: "GORNA-MALINA-FAMILY",
       },
     ])
     .returning();
@@ -408,99 +314,125 @@ async function main() {
     .insert(sessions)
     .values([
       {
-        groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-        sessionDate: toDateOnly(addDays(today, 3)),
+        groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id,
+        sessionDate: toDateOnly(addDays(today, 2)),
         startTime: "17:00",
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
-        coachUserId: coach1.id,
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+        coachUserId: coachGeorgi.id,
+        capacity: 18,
+      },
+      {
+        groupId: groupByTitle.get("Sofia U13 Development")!.id,
+        sessionDate: toDateOnly(addDays(today, 3)),
+        startTime: "18:00",
+        venueId: venueByName.get("Sport Center Chelopechene")!.id,
+        coachUserId: coachMaria.id,
         capacity: 16,
       },
       {
-        groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-        sessionDate: toDateOnly(addDays(today, 5)),
-        startTime: "18:30",
-        venueId: venueByName.get("Plovdiv Sports Center")!.id,
-        coachUserId: coach2.id,
-        capacity: 16,
-      },
-      {
-        groupId: groupByTitle.get("Varna Beginners")!.id,
-        sessionDate: toDateOnly(addDays(today, 6)),
-        startTime: "17:30",
-        venueId: venueByName.get("Varna Sea Palace")!.id,
-        coachUserId: coach1.id,
+        groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+        sessionDate: toDateOnly(addDays(today, 4)),
+        startTime: "19:00",
+        venueId: venueByName.get("Arena Sofia Practice Hall")!.id,
+        coachUserId: coachPetar.id,
         capacity: 14,
       },
       {
-        groupId: groupByTitle.get("Sofia Social Adults")!.id,
-        sessionDate: toDateOnly(addDays(today, 7)),
-        startTime: "19:00",
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
-        coachUserId: coach2.id,
+        groupId: groupByTitle.get("Elin Pelin Beginners")!.id,
+        sessionDate: toDateOnly(addDays(today, 5)),
+        startTime: "16:30",
+        venueId: venueByName.get("Elin Pelin Municipal Hall")!.id,
+        coachUserId: coachGeorgi.id,
+        capacity: 14,
+      },
+      {
+        groupId: groupByTitle.get("Gorna Malina Family Badminton")!.id,
+        sessionDate: toDateOnly(addDays(today, 6)),
+        startTime: "10:00",
+        venueId: venueByName.get("Gorna Malina Sports Hall")!.id,
+        coachUserId: coachMaria.id,
         capacity: 20,
       },
       {
-        groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
-        sessionDate: toDateOnly(addDays(today, -20)),
-        startTime: "17:00",
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
-        coachUserId: coach1.id,
+        groupId: groupByTitle.get("Social Badminton Sofia")!.id,
+        sessionDate: toDateOnly(addDays(today, 7)),
+        startTime: "20:00",
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+        coachUserId: coachPetar.id,
+        capacity: 24,
+      },
+      {
+        groupId: groupByTitle.get("Sofia U13 Development")!.id,
+        sessionDate: toDateOnly(addDays(today, -6)),
+        startTime: "18:00",
+        venueId: venueByName.get("Sport Center Chelopechene")!.id,
+        coachUserId: coachMaria.id,
         capacity: 16,
       },
       {
-        groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-        sessionDate: toDateOnly(addDays(today, -30)),
-        startTime: "18:30",
-        venueId: venueByName.get("Plovdiv Sports Center")!.id,
-        coachUserId: coach2.id,
-        capacity: 16,
+        groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+        sessionDate: toDateOnly(addDays(today, -12)),
+        startTime: "19:00",
+        venueId: venueByName.get("Arena Sofia Practice Hall")!.id,
+        coachUserId: coachPetar.id,
+        capacity: 14,
+      },
+      {
+        groupId: groupByTitle.get("Social Badminton Sofia")!.id,
+        sessionDate: toDateOnly(addDays(today, -2)),
+        startTime: "20:00",
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+        coachUserId: coachPetar.id,
+        capacity: 24,
+        canceled: true,
       },
     ])
     .returning();
 
-  for (const [sessionIndex, session] of insertedSessions.entries()) {
-    const playerOffset = (sessionIndex * 4) % insertedPlayers.length;
-    const sessionPlayers = insertedPlayers.slice(playerOffset, playerOffset + 4);
+  for (const [index, session] of insertedSessions.entries()) {
+    const player = insertedPlayers[index % insertedPlayers.length];
+    const secondPlayer = insertedPlayers[(index + 5) % insertedPlayers.length];
+    const thirdPlayer = insertedPlayers[(index + 9) % insertedPlayers.length];
 
     await db.insert(sessionAttendance).values([
       {
         sessionId: session.id,
-        playerId: sessionPlayers[0].id,
-        parentUserId: sessionPlayers[0].parentUserId,
+        playerId: player.id,
+        parentUserId: player.parentUserId,
         status: "attending",
-        note: "Confirmed for training.",
+        note: "Confirmed in the mobile app.",
       },
       {
         sessionId: session.id,
-        playerId: sessionPlayers[1].id,
-        parentUserId: sessionPlayers[1].parentUserId,
-        status: "absent",
-        note: "Out of town this week.",
+        playerId: secondPlayer.id,
+        parentUserId: secondPlayer.parentUserId,
+        status: index % 3 === 0 ? "maybe" : "attending",
+        note: index % 3 === 0 ? "Waiting on school schedule." : "Can help with warm-up setup.",
       },
       {
         sessionId: session.id,
-        playerId: sessionPlayers[2].id,
-        parentUserId: sessionPlayers[2].parentUserId,
-        status: "maybe",
-        note: "Will confirm by tomorrow.",
+        playerId: thirdPlayer.id,
+        parentUserId: thirdPlayer.parentUserId,
+        status: index % 2 === 0 ? "absent" : "attending",
+        note: index % 2 === 0 ? "Family travel this week." : "Needs loan racket.",
       },
     ]);
 
     await db.insert(sessionComments).values([
       {
         sessionId: session.id,
-        userId: sessionIndex % 2 === 0 ? coach1.id : coach2.id,
-        text: "Focus on footwork and clears during warm-up.",
+        userId: index % 2 === 0 ? coachGeorgi.id : coachMaria.id,
+        text: "Plan: short footwork ladder, serve targets, then controlled games.",
       },
       {
         sessionId: session.id,
         userId: manager.id,
-        text: "Please arrive 10 minutes early for court setup.",
+        text: "Please update attendance by noon so court allocation stays accurate.",
       },
       {
         sessionId: session.id,
-        userId: parents[sessionIndex % parents.length].id,
-        text: "We will be a few minutes late due to traffic.",
+        userId: parentUsers[index % parentUsers.length].id,
+        text: "Thanks, attendance is updated for our player.",
       },
     ]);
   }
@@ -509,98 +441,115 @@ async function main() {
     .insert(events)
     .values([
       {
-        title: "Sofia Junior Open",
-        description: "Junior singles and doubles for club players.",
-        venueId: venueByName.get("Arena Sofia Hall")!.id,
-        eventDate: atLocalHour(addDays(today, 14), 10),
-        capacity: 48,
+        title: "Racket Speed Tour 2026 - Round 4",
+        description: "Club tour round for U11, U13, and 14-19 players with singles and optional parent-child doubles.",
+        venueId: venueByName.get("Sport Center Chelopechene")!.id,
+        eventDate: atLocalHour(addDays(today, 31), 9),
+        capacity: 64,
       },
       {
-        title: "Varna Summer Camp",
-        description: "Weekend camp focused on footwork and endurance.",
-        venueId: venueByName.get("Varna Sea Palace")!.id,
-        eventDate: atLocalHour(addDays(today, 21), 11),
-        capacity: 32,
+        title: "Racket Speed Tour 2026 - Round 5",
+        description: "Autumn club ranking event with medal ceremonies for all age brackets.",
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+        eventDate: atLocalHour(addDays(today, 108), 9),
+        capacity: 64,
       },
       {
-        title: "Burgas Club Social Night",
-        description: "Friendly doubles evening with light refreshments.",
-        venueId: venueByName.get("Burgas Mladost Hall")!.id,
-        eventDate: atLocalHour(addDays(today, 45), 9),
+        title: "Summer Sports Camp 2026 - Primorsko",
+        description: "Seven-day camp at MMC Helios focused on movement, confidence, beach conditioning, and team habits.",
+        venueId: venueByName.get("MMC Helios Primorsko")!.id,
+        eventDate: atLocalHour(addDays(today, 47), 10),
         capacity: 40,
       },
       {
-        title: "Plovdiv Training Day",
-        description: "Open training day for new players and families.",
-        venueId: venueByName.get("Plovdiv Sports Center")!.id,
-        eventDate: atLocalHour(addDays(today, 10), 16),
-        capacity: 24,
+        title: "Family Doubles Sunday",
+        description: "Friendly parent-child doubles morning for families from Sofia, Elin Pelin, and Gorna Malina.",
+        venueId: venueByName.get("Gorna Malina Sports Hall")!.id,
+        eventDate: atLocalHour(addDays(today, 17), 10),
+        capacity: 32,
+      },
+      {
+        title: "Open Club Day - Slatina",
+        description: "Introductory day for new families with short assessments and club orientation.",
+        venueId: venueByName.get("Sport Complex Akademik")!.id,
+        eventDate: atLocalHour(addDays(today, 10), 11),
+        capacity: 50,
+      },
+      {
+        title: "Canceled Shuttle Control Workshop",
+        description: "Workshop kept in the data so reviewers can see canceled event handling.",
+        venueId: venueByName.get("Arena Sofia Practice Hall")!.id,
+        eventDate: atLocalHour(addDays(today, 24), 18),
+        capacity: 18,
+        canceled: true,
       },
     ])
     .returning();
 
   await db.insert(eventRegistrations).values([
-    {
-      eventId: insertedEvents[0].id,
-      userId: parents[0].id,
-      playerId: insertedPlayers[0].id,
-      status: "registered",
-    },
-    {
-      eventId: insertedEvents[0].id,
-      userId: parents[1].id,
-      playerId: insertedPlayers[1].id,
-      status: "registered",
-    },
-    {
-      eventId: insertedEvents[1].id,
-      userId: adultUsers[0].id,
-      status: "registered",
-    },
-    {
-      eventId: insertedEvents[1].id,
-      userId: adultUsers[1].id,
-      status: "waitlisted",
-    },
-    {
-      eventId: insertedEvents[2].id,
-      userId: parents[2].id,
-      playerId: insertedPlayers[12].id,
-      status: "registered",
-    },
-    {
-      eventId: insertedEvents[3].id,
-      userId: manager.id,
-      status: "registered",
-    },
+    { eventId: insertedEvents[0].id, userId: parentUsers[0].id, playerId: playerByName.get("Aleksandar Petrov")!.id, status: "registered" },
+    { eventId: insertedEvents[0].id, userId: parentUsers[1].id, playerId: playerByName.get("Nia Mihaylova")!.id, status: "registered" },
+    { eventId: insertedEvents[0].id, userId: parentUsers[4].id, playerId: playerByName.get("Teodor Angelov")!.id, status: "waitlisted" },
+    { eventId: insertedEvents[1].id, userId: parentUsers[2].id, playerId: playerByName.get("Radostina Vasileva")!.id, status: "registered" },
+    { eventId: insertedEvents[2].id, userId: parentUsers[3].id, playerId: playerByName.get("Lora Marinova")!.id, status: "registered" },
+    { eventId: insertedEvents[2].id, userId: parentUsers[4].id, playerId: playerByName.get("Boris Angelov")!.id, status: "registered" },
+    { eventId: insertedEvents[3].id, userId: parentUsers[0].id, playerId: playerByName.get("Mila Dimitrova")!.id, status: "registered" },
+    { eventId: insertedEvents[3].id, userId: socialUsers[0].id, status: "registered" },
+    { eventId: insertedEvents[4].id, userId: manager.id, status: "registered" },
+    { eventId: insertedEvents[4].id, userId: admin.id, status: "registered" },
+    { eventId: insertedEvents[5].id, userId: parentUsers[1].id, playerId: playerByName.get("Viktor Mihaylov")!.id, status: "canceled" },
   ]);
 
   const insertedAnnouncements = await db
     .insert(groupAnnouncements)
     .values([
       {
-        groupId: groupByTitle.get("Sofia Kids 7-10")!.id,
+        groupId: groupByTitle.get("Sofia U11 Fundamentals")!.id,
+        authorId: coachGeorgi.id,
+        title: "Bring clean indoor shoes for Akademik",
+        content: "This week we are checking grips and indoor shoes before training. New players can borrow rackets from the club bag.",
+      },
+      {
+        groupId: groupByTitle.get("Sofia U13 Development")!.id,
+        authorId: coachMaria.id,
+        title: "Tour round preparation at Chelopechene",
+        content: "The next two sessions will include singles scoring, short serve routines, and doubles rotation for parent-child pairs.",
+      },
+      {
+        groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+        authorId: coachPetar.id,
+        title: "Competitive squad match video review",
+        content: "Players should bring notes from their last match. We will review first-three-shot choices before court work.",
+      },
+      {
+        groupId: groupByTitle.get("Elin Pelin Beginners")!.id,
         authorId: manager.id,
-        title: "Season kickoff and gear check",
-        content: "We start the new season next week. Please bring indoor shoes, a water bottle, and a light jacket for warm-up.",
+        title: "Regional group schedule confirmed",
+        content: "The Elin Pelin group keeps its Friday slot. Parents can use the group invitation code for new registrations.",
       },
       {
-        groupId: groupByTitle.get("Plovdiv Advanced Juniors")!.id,
-        authorId: coach2.id,
-        title: "Tournament prep week",
-        content: "We will focus on match play and serve routines. Please review the tournament schedule in the events tab.",
+        groupId: groupByTitle.get("Gorna Malina Family Badminton")!.id,
+        authorId: coachMaria.id,
+        title: "Family Doubles Sunday sign-up",
+        content: "Please register through Events if you plan to join the family doubles morning. We will pair new families on arrival.",
       },
       {
-        groupId: groupByTitle.get("Sofia Social Adults")!.id,
-        authorId: coach2.id,
-        title: "Social session full",
-        content: "This week's social session is full. Please update your attendance if your plans change so we can offer spots.",
+        groupId: groupByTitle.get("Social Badminton Sofia")!.id,
+        authorId: coachPetar.id,
+        title: "Social badminton courts are capped",
+        content: "Thursday social play is limited to 24 people. Update attendance early so the waiting list can move.",
+      },
+      {
+        groupId: groupByTitle.get("Junior Competitive 14-19")!.id,
+        authorId: manager.id,
+        title: "Summer camp deposits and travel plan",
+        content: "Camp registrations for Primorsko are open. Families should confirm transport needs before the end of the month.",
       },
     ])
     .returning();
 
   console.log(
-    `Seeded ${insertedUsers.length} users, ${insertedPlayers.length} players, ${insertedGroups.length} groups, ${insertedSessions.length} sessions, ${insertedEvents.length} events, ${insertedAnnouncements.length} announcements, and ${insertedInvitations.length} invitations.`,
+    `Seeded ${insertedUsers.length} users, ${insertedPlayers.length} players, ${insertedVenues.length} venues, ${insertedGroups.length} groups, ${insertedSessions.length} sessions, ${insertedEvents.length} events, ${insertedAnnouncements.length} announcements, and ${insertedInvitations.length} invitations.`,
   );
 }
 

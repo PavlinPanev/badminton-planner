@@ -3,7 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 import type { AuthUser } from "@/auth/token";
 import { db, groupAnnouncements, groupMembers, groups, players, sessions, users, venues } from "@/db";
-import { canCreateGroups as canCreateGroupsByRole, canManageGroupContent } from "./permissions";
+import { canCreateGroups as canCreateGroupsByRole, canManageGroupContent, isAdmin } from "./permissions";
 import { getSessionState } from "./session-status";
 
 export type UserGroupCardData = {
@@ -212,6 +212,11 @@ async function getUserGroupMemberships(user: AuthUser) {
 }
 
 async function getUserGroupIds(user: AuthUser) {
+  if (isAdmin(user)) {
+    const allGroups = await db.select({ id: groups.id }).from(groups);
+    return allGroups.map((group) => group.id);
+  }
+
   const memberships = await getUserGroupMemberships(user);
   return Array.from(new Set(memberships.map((membership) => membership.groupId)));
 }
@@ -255,7 +260,7 @@ export function getGroupAgeLabel(group: { minAge: number | null; maxAge: number 
 
 export async function getGroupsForUser(user: AuthUser): Promise<UserGroupCardData[]> {
   const memberships = await getUserGroupMemberships(user);
-  const groupIds = Array.from(new Set(memberships.map((membership) => membership.groupId)));
+  const groupIds = await getUserGroupIds(user);
 
   if (!groupIds.length) {
     return [];
@@ -289,8 +294,8 @@ export async function getGroupsForUser(user: AuthUser): Promise<UserGroupCardDat
   return rows.map((row) => ({
     ...row,
     ...(stats.get(row.id) ?? { memberCount: 0, playerCount: 0, sessionCount: 0 }),
-    roles: Array.from(rolesByGroup.get(row.id) ?? []),
-    canManage: rolesByGroup.get(row.id)?.has("manager") ?? false,
+    roles: isAdmin(user) ? ["admin"] : Array.from(rolesByGroup.get(row.id) ?? []),
+    canManage: isAdmin(user) || (rolesByGroup.get(row.id)?.has("manager") ?? false),
   }));
 }
 
@@ -316,7 +321,7 @@ export async function getGroupsPageForUser(
   options?: { page?: number; pageSize?: number },
 ): Promise<UserGroupListResult> {
   const memberships = await getUserGroupMemberships(user);
-  const groupIds = Array.from(new Set(memberships.map((membership) => membership.groupId)));
+  const groupIds = await getUserGroupIds(user);
   const page = normalizePage(options?.page);
   const pageSize = normalizePageSize(options?.pageSize);
   const offset = (page - 1) * pageSize;
@@ -364,8 +369,8 @@ export async function getGroupsPageForUser(
     groups: rows.map((row) => ({
       ...row,
       ...(stats.get(row.id) ?? { memberCount: 0, playerCount: 0, sessionCount: 0 }),
-      roles: Array.from(rolesByGroup.get(row.id) ?? []),
-      canManage: rolesByGroup.get(row.id)?.has("manager") ?? false,
+      roles: isAdmin(user) ? ["admin"] : Array.from(rolesByGroup.get(row.id) ?? []),
+      canManage: isAdmin(user) || (rolesByGroup.get(row.id)?.has("manager") ?? false),
     })),
     paging: {
       page,
@@ -377,6 +382,10 @@ export async function getGroupsPageForUser(
 }
 
 export async function canManageGroup(groupId: number, user: AuthUser) {
+  if (isAdmin(user)) {
+    return true;
+  }
+
   const [membership] = await db
     .select({ id: groupMembers.id })
     .from(groupMembers)
@@ -387,7 +396,7 @@ export async function canManageGroup(groupId: number, user: AuthUser) {
 }
 
 export async function canManageGroupSessions(groupId: number, user: AuthUser) {
-  if (user.role === "admin") {
+  if (isAdmin(user)) {
     return true;
   }
 
@@ -401,7 +410,7 @@ export async function canManageGroupSessions(groupId: number, user: AuthUser) {
 }
 
 export async function canManageGroupAnnouncements(groupId: number, user: AuthUser) {
-  if (user.role === "admin") {
+  if (isAdmin(user)) {
     return true;
   }
 
@@ -415,6 +424,10 @@ export async function canManageGroupAnnouncements(groupId: number, user: AuthUse
 }
 
 export async function canViewGroup(groupId: number, user: AuthUser) {
+  if (isAdmin(user)) {
+    return true;
+  }
+
   const accessibleGroupIds = await getUserGroupIds(user);
   return accessibleGroupIds.includes(groupId);
 }
@@ -831,8 +844,8 @@ export async function getGroupDetailPageForUser(
     group: {
       ...group,
       ...stats,
-      roles: userGroups.find((userGroup) => userGroup.id === groupId)?.roles ?? [],
-      canManage: userGroups.find((userGroup) => userGroup.id === groupId)?.canManage ?? false,
+      roles: isAdmin(user) ? ["admin"] : userGroups.find((userGroup) => userGroup.id === groupId)?.roles ?? [],
+      canManage: isAdmin(user) || (userGroups.find((userGroup) => userGroup.id === groupId)?.canManage ?? false),
       currentUserRole: currentUserDirectMember?.role ?? null,
       canLeave: Boolean(currentUserDirectMember),
       canManageSessions,

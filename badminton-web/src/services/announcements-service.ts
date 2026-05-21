@@ -6,6 +6,7 @@ import type { AnnouncementsResponse } from "badminton-shared";
 import type { AuthUser } from "@/auth/token";
 import { paginationMeta } from "@/auth/api";
 import { db, groupAnnouncements, groupMembers, groups, players, users } from "@/db";
+import { isAdmin } from "@/lib/permissions";
 
 async function getOwnedPlayerIds(userId: number) {
   const rows = await db.select({ id: players.id }).from(players).where(eq(players.parentUserId, userId));
@@ -35,16 +36,16 @@ export async function listAnnouncements(
   user: AuthUser,
   options: { page: number; pageSize: number; offset: number },
 ): Promise<AnnouncementsResponse> {
-  const groupIds = await getUserGroupIds(user.id);
+  const groupIds = isAdmin(user) ? [] : await getUserGroupIds(user.id);
 
-  if (groupIds.length === 0) {
+  if (!isAdmin(user) && groupIds.length === 0) {
     return {
       data: [],
       paging: paginationMeta(options.page, options.pageSize, 0),
     };
   }
 
-  const where = inArray(groupAnnouncements.groupId, groupIds);
+  const where = isAdmin(user) ? undefined : inArray(groupAnnouncements.groupId, groupIds);
   const [[{ total: totalCount }], pageItems] = await Promise.all([
     db.select({ total: count() }).from(groupAnnouncements).where(where),
     db
